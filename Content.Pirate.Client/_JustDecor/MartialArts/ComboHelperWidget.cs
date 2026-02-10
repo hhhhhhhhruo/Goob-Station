@@ -26,7 +26,7 @@ public sealed class ComboHelperWidget : UIWidget
         IoCManager.InjectDependencies(this);
         _spriteSystem = _entManager.System<SpriteSystem>();
 
-        /// TODO: зробити так, щоб віджет знаходився між інвентарем і таргетінгом(вибирання куди вдарити)
+        LayoutContainer.SetAnchorAndMarginPreset(this, LayoutContainer.LayoutPreset.CenterBottom, margin: 5);
 
         // Встановлюємо віджет на весь екран, але він ігнорує миші
         MouseFilter = MouseFilterMode.Ignore;
@@ -35,7 +35,7 @@ public sealed class ComboHelperWidget : UIWidget
         _container = new BoxContainer
         {
             Orientation = BoxContainer.LayoutOrientation.Vertical,
-            HorizontalAlignment = HAlignment.Left,
+            HorizontalAlignment = HAlignment.Center,
             VerticalAlignment = VAlignment.Bottom,
             Margin = new Thickness(0), // Відступ від нижнього правого кута
             SeparationOverride = 5,
@@ -93,7 +93,7 @@ public sealed class ComboHelperWidget : UIWidget
         {
             Orientation = BoxContainer.LayoutOrientation.Horizontal,
             SeparationOverride = 2,
-            HorizontalAlignment = HAlignment.Left,
+            HorizontalAlignment = HAlignment.Center,
             MouseFilter = MouseFilterMode.Ignore
         };
 
