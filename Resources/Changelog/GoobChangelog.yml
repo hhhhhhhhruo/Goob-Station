@@ -20558,3 +20558,11 @@ Entries:
       message: Interacting on a crawling person no longer permastuns them.
   id: 2403
   time: '2026-02-12T11:54:46.0000000+00:00'
+- author: DeusMaldPr
+  changes:
+    - type: Tweak
+      message: >-
+        Мапінг Meta! Додано клонування на старті раунду та перенесено ксенобіо.
+        Також багато інших дрібних покращень.
+  id: 2404
+  time: '2026-02-12T15:33:47.0000000+00:00'
