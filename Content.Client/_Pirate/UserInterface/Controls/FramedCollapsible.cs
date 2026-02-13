@@ -107,13 +107,17 @@ public sealed class FramedCollapsible : PanelContainer
 
     private void ApplyExpandedState()
     {
-        // Keep chevron state in sync with expanded/collapsed regardless of section contents.
+        // Important ordering dependency:
+        // `_collapsible.BodyVisible` drives CollapsibleHeading pressed state (chevron direction) and also applies
+        // Collapsible's internal OnToggled/body visibility behavior. We set it first to keep heading state synced.
+        // We then explicitly override `Body.Visible` for empty sections so the body stays hidden even when expanded.
+        // Final body visibility depends on this call order; do not assume Collapsible internal handler ordering is stable.
         _collapsible.BodyVisible = _expanded;
 
         if (_chevronIcon != null)
             _chevronIcon.TexturePath = _expanded ? ChevronExpandedIconPath : ChevronCollapsedIconPath;
 
-        // For empty sections we keep body hidden to avoid vertical twitching on toggle.
+        // Explicit final visibility override after _collapsible state sync.
         Body.Visible = !_isEmptySection && _expanded;
     }
 
@@ -121,7 +125,7 @@ public sealed class FramedCollapsible : PanelContainer
     {
         foreach (var child in control.Children)
         {
-            if (child is TextureRect textureRect)
+            if (child is TextureRect textureRect && IsChevronTextureRect(textureRect))
                 return textureRect;
 
             var nested = FindChevronIcon(child);
@@ -130,5 +134,13 @@ public sealed class FramedCollapsible : PanelContainer
         }
 
         return null;
+    }
+
+    private static bool IsChevronTextureRect(TextureRect textureRect)
+    {
+        if (textureRect.Name == "Chevron")
+            return true;
+
+        return textureRect.StyleClasses.Contains(OptionButton.StyleClassOptionTriangle);
     }
 }

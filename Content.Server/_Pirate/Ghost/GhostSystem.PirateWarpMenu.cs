@@ -55,6 +55,7 @@ public sealed partial class GhostSystem
         "Xeno",
         "Zombie"
     };
+    private readonly Dictionary<NetEntity, int> _lastBroadcastObserverCounts = new();
 
     private void OnFollowChanged(FollowEvent ev)
     {
@@ -64,13 +65,21 @@ public sealed partial class GhostSystem
     private void BroadcastObserverCount(EntityUid followedEntity)
     {
         var count = _followerSystem.GetGhostFollowerCount(followedEntity);
-        var ev = new GhostWarpObserverCountChangedEvent(GetNetEntity(followedEntity), count);
-        foreach (var session in _player.Sessions)
+        var followedNet = GetNetEntity(followedEntity);
+        if (_lastBroadcastObserverCounts.TryGetValue(followedNet, out var previousCount) && previousCount == count)
+            return;
+
+        _lastBroadcastObserverCounts[followedNet] = count;
+
+        var ev = new GhostWarpObserverCountChangedEvent(followedNet, count);
+        var sentSessions = new HashSet<ICommonSession>();
+        var ghostQuery = EntityQueryEnumerator<GhostComponent, ActorComponent>();
+        while (ghostQuery.MoveNext(out _, out _, out var actor))
         {
-            if (session.AttachedEntity is not { Valid: true } attached)
+            var session = actor.PlayerSession;
+            if (!sentSessions.Add(session))
                 continue;
-            if (!_ghostQuery.HasComp(attached))
-                continue;
+
             RaiseNetworkEvent(ev, session.Channel);
         }
     }
@@ -182,6 +191,8 @@ public sealed partial class GhostSystem
                 if (!TryComp<DamageableComponent>(uid, out var damageable) ||
                     !_mobThresholdSystem.TryGetThresholdForState(uid, MobState.Critical, out var critThreshold))
                     return GhostWarpHealthState.Healthy;
+                if (critThreshold.Value <= 0)
+                    return GhostWarpHealthState.Healthy;
                 var totalDamage = _mobThresholdSystem.CheckVitalDamage(uid, damageable);
                 var ratio = (float)(totalDamage / critThreshold).Value;
                 return ratio >= WoundedDamageRatio ? GhostWarpHealthState.Wounded : GhostWarpHealthState.Healthy;
@@ -261,7 +272,7 @@ public sealed partial class GhostSystem
 
         foreach (var (target, mindId, mobState) in GetPlayerOwnedWarpTargets(except))
         {
-            if (count >= maxDead || mobState != MobState.Dead)
+            if (mobState != MobState.Dead)
                 continue;
 
             count++;
@@ -275,6 +286,9 @@ public sealed partial class GhostSystem
             if (string.IsNullOrEmpty(departmentId))
                 departmentId = GetDepartmentIdFromEntity(target);
             yield return new GhostWarp(GetNetEntity(target), entityName, GhostWarpType.Dead, _followerSystem.GetGhostFollowerCount(target), jobIconId, mobState, jobName, healthState, departmentId);
+
+            if (count >= maxDead)
+                break;
         }
     }
 
