@@ -9,6 +9,7 @@ using Content.Shared.Access.Systems;
 using Content.Shared.CCVar;
 using Content.Shared.Damage;
 using Content.Shared.Follower;
+using Content.Shared.Follower.Components;
 using Content.Shared.GameTicking;
 using Content.Shared.Ghost;
 using Content.Shared.Mind;
@@ -89,6 +90,9 @@ public sealed partial class GhostSystem
 
     private void OnWarpObserverEntityTerminating(EntityUid uid, MetaDataComponent component, ref EntityTerminatingEvent args)
     {
+        if (!HasComp<FollowedComponent>(uid))
+            return;
+
         _lastBroadcastObserverCounts.Remove(GetNetEntity(uid));
     }
 
@@ -244,7 +248,7 @@ public sealed partial class GhostSystem
         if (!TryComp<StationAiCoreComponent>(container.Owner, out var core))
             return attached;
 
-        return core.RemoteEntity is { Valid: true } remote ? remote : attached;
+        return core.RemoteEntity is { Valid: true } remote && EntityManager.EntityExists(remote) ? remote : attached;
     }
 
     private IEnumerable<GhostWarp> GetPlayerWarps(IReadOnlyList<(EntityUid Target, EntityUid? MindId, MobState MobState)> playerOwnedTargets)
