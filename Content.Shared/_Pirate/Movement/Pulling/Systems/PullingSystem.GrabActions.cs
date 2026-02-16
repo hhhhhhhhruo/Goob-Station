@@ -13,6 +13,7 @@ using Content.Shared.Body.Part;
 using Content.Shared.Body.Systems;
 using Content.Shared.DoAfter;
 using Content.Shared.IdentityManagement;
+using Content.Shared.Inventory;
 using Content.Shared.Mobs.Components;
 using Content.Shared.Movement.Pulling.Components;
 using Content.Shared.Popups;
@@ -43,6 +44,7 @@ public sealed partial class PullingSystem
     [Dependency] private readonly SharedDoAfterSystem _doAfter = default!;
     [Dependency] private readonly SharedBodySystem _body = default!;
     [Dependency] private readonly DamageableSystem _damageable = default!;
+    [Dependency] private readonly InventorySystem _inventory = default!;
     [Dependency] private readonly SharedMeleeWeaponSystem _melee = default!;
 
     public override void Update(float frameTime)
@@ -78,7 +80,7 @@ public sealed partial class PullingSystem
             || used is not { } usedItem)
             return;
 
-        if (CanStartThroatSliceDoAfter((args.User, pullerComp), ent, usedItem, out var throatSlicePart))
+        if (CanStartThroatSliceDoAfter((args.User, pullerComp), ent, usedItem, out var throatSlicePart, out var throatBlockingItem))
         {
             var sliceDoAfter = new DoAfterArgs(
                 EntityManager,
@@ -110,6 +112,9 @@ public sealed partial class PullingSystem
             args.Cancel();
             return;
         }
+
+        if (throatBlockingItem is { } blockingItem)
+            PopupGrabActionCancelled(args.User, "popup-grab-throat-slice-cancel-covered", ("item", blockingItem));
 
         if (!CanStartBoneBreakDoAfter((args.User, pullerComp), ent, usedItem, out var targetPart))
             return;
@@ -239,10 +244,13 @@ public sealed partial class PullingSystem
             return;
         }
 
-        if (!CanStartThroatSliceDoAfter(ent, (target, pullableComp), used, out var targetPart)
+        if (!CanStartThroatSliceDoAfter(ent, (target, pullableComp), used, out var targetPart, out var blockingItem)
             || targetPart != args.TargetPart)
         {
-            PopupGrabActionCancelled(ent.Owner, "popup-grab-throat-slice-cancel-conditions");
+            if (blockingItem is { } coveredBy)
+                PopupGrabActionCancelled(ent.Owner, "popup-grab-throat-slice-cancel-covered", ("item", coveredBy));
+            else
+                PopupGrabActionCancelled(ent.Owner, "popup-grab-throat-slice-cancel-conditions");
             return;
         }
 
@@ -305,9 +313,11 @@ public sealed partial class PullingSystem
         Entity<PullerComponent> puller,
         Entity<PullableComponent> pullable,
         EntityUid used,
-        out TargetBodyPart targetPart)
+        out TargetBodyPart targetPart,
+        out EntityUid? blockingItem)
     {
         targetPart = TargetBodyPart.Chest;
+        blockingItem = null;
 
         if (puller.Comp.Pulling != pullable.Owner
             || pullable.Comp.Puller != puller.Owner
@@ -327,8 +337,33 @@ public sealed partial class PullingSystem
         if (!TryGetHeadWoundable(pullable.Owner, out _))
             return false;
 
+        if (TryGetThroatCoveringItem(pullable.Owner, out var coveringItem))
+        {
+            blockingItem = coveringItem;
+            return false;
+        }
+
         targetPart = targeting.Target;
         return GetSharpDamage(used) > 0f;
+    }
+
+    private bool TryGetThroatCoveringItem(EntityUid target, out EntityUid coveringItem)
+    {
+        coveringItem = default;
+        const SlotFlags throatCoveringSlots = SlotFlags.MASK | SlotFlags.NECK;
+        if (!_inventory.TryGetContainerSlotEnumerator(target, out var containerSlotEnumerator, throatCoveringSlots))
+            return false;
+
+        while (containerSlotEnumerator.MoveNext(out var containerSlot))
+        {
+            if (containerSlot.ContainedEntity.HasValue)
+            {
+                coveringItem = containerSlot.ContainedEntity.Value;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private float GetBluntDamage(EntityUid used)
@@ -578,13 +613,22 @@ public sealed partial class PullingSystem
             canMiss: false);
     }
 
-    private void PopupGrabActionCancelled(EntityUid user, string message)
+    private void PopupGrabActionCancelled(
+        EntityUid user,
+        string message,
+        params (string Name, object Value)[] extraArgs)
     {
         if (!_netManager.IsServer)
             return;
 
+        var normalizedArgs = new List<(string, object)>(extraArgs.Length);
+        foreach (var (name, value) in extraArgs)
+        {
+            normalizedArgs.Add((name, value is EntityUid uid ? Identity.Entity(uid, EntityManager) : value));
+        }
+
         _popup.PopupEntity(
-            Loc.GetString(message),
+            Loc.GetString(message, normalizedArgs.ToArray()),
             user,
             user,
             PopupType.MediumCaution);

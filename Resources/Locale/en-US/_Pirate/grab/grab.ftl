@@ -22,6 +22,7 @@ popup-grab-bone-break-cancel-invalid-weapon = You need a blunt weapon to break b
 popup-grab-throat-slice-cancel-interrupted = You stop trying to slice the throat.
 popup-grab-throat-slice-cancel-target-lost = You are no longer controlling the target.
 popup-grab-throat-slice-cancel-conditions = Conditions for throat slicing are no longer met.
+popup-grab-throat-slice-cancel-covered = You need to remove {CAPITALIZE($item)} from the target first.
 popup-grab-throat-slice-cancel-no-throat = You cannot target the throat right now.
 popup-grab-throat-slice-cancel-invalid-weapon = You need a sharp weapon to slice a throat.
 popup-grab-limb-leg = leg

@@ -28,3 +28,5 @@ popup-grab-limb-leg = ногу
 popup-grab-limb-left-leg = ліву ногу
 popup-grab-limb-right-leg = праву ногу
 popup-grab-limb-throat = горло
+
+popup-grab-throat-slice-cancel-covered = Спочатку зніміть {CAPITALIZE($item)} з цілі.
