@@ -48,7 +48,7 @@ namespace Content.Server.IdentityManagement;
 /// <summary>
 ///     Responsible for updating the identity of an entity on init or clothing equip/unequip.
 /// </summary>
-public sealed class IdentitySystem : SharedIdentitySystem
+public sealed partial class IdentitySystem : SharedIdentitySystem // DOWNSTREAM-TPirates: face mutilation
 {
     [Dependency] private readonly IdCardSystem _idCard = default!;
     [Dependency] private readonly IAdminLogManager _adminLog = default!;
@@ -76,6 +76,7 @@ public sealed class IdentitySystem : SharedIdentitySystem
 
         SubscribeLocalEvent<IdentityBlockerComponent, ComponentInit>(BlockerUpdateIdentity); // Goobstation - Update component state on component toggle
         SubscribeLocalEvent<IdentityBlockerComponent, ComponentRemove>(BlockerUpdateIdentity); // Goobstation - Update component state on component toggle
+        InitializePirateFaceMutilation(); // DOWNSTREAM-TPirates: face mutilation
     }
 
     public override void Update(float frameTime)
@@ -165,6 +166,11 @@ public sealed class IdentitySystem : SharedIdentitySystem
 
     private string GetIdentityName(EntityUid target, IdentityRepresentation representation)
     {
+        #region DOWNSTREAM-TPirates: face mutilation
+        if (TryGetPirateFaceMutilationIdentity(target, representation, out var pirateIdentity))
+            return pirateIdentity;
+        #endregion
+
         var ev = new SeeIdentityAttemptEvent();
 
         RaiseLocalEvent(target, ev);
@@ -181,6 +187,9 @@ public sealed class IdentitySystem : SharedIdentitySystem
         _criminalRecordsConsole.CheckNewIdentity(uid);
         _psionicsRecordsConsole.CheckNewIdentity(uid);
     }
+
+    private partial void InitializePirateFaceMutilation(); // DOWNSTREAM-TPirates: face mutilation
+    private partial bool TryGetPirateFaceMutilationIdentity(EntityUid target, IdentityRepresentation representation, out string identity); // DOWNSTREAM-TPirates: face mutilation
 
     /// <summary>
     ///     Gets an 'identity representation' of an entity, with their true name being the entity name

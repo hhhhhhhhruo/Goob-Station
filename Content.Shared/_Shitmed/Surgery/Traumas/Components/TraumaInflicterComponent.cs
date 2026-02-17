@@ -43,6 +43,7 @@ public sealed partial class TraumaInflicterComponent : Component
         { TraumaType.BoneDamage, "BoneDamage" },
         { TraumaType.NerveDamage, "NerveDamage" },
         { TraumaType.VeinsDamage, "VeinsDamage" },
+        { TraumaType.FaceMutilation, "FaceMutilation" }, // DOWNSTREAM-TPirates: face mutilation
     };
 
     /// <summary>

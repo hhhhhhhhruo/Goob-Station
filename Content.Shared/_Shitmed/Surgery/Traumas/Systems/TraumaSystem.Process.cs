@@ -292,6 +292,9 @@ public partial class TraumaSystem
             RandomOrganTraumaChance((target, woundable), woundInflicter))
             traumaList.Add(TraumaType.OrganDamage);
 
+        if (RandomFaceMutilationChance((target, woundable), woundInflicter)) // DOWNSTREAM-TPirates: face mutilation
+            traumaList.Add(TraumaType.FaceMutilation);
+
         //if (RandomVeinsTraumaChance(woundable))
         //    traumaList.Add(TraumaType.VeinsDamage);
 
@@ -311,12 +314,13 @@ public partial class TraumaSystem
             if (!TryComp<ArmorComponent>(ent, out var armour))
                 continue;
 
-            if (!inflicter.Comp.AllowArmourDeduction.Contains(traumaType) && armour.TraumaDeductions[traumaType] >= 0)
+            var armorDeduction = armour.TraumaDeductions.GetValueOrDefault(traumaType, FixedPoint2.Zero); // DOWNSTREAM-TPirates: face mutilation
+            if (!inflicter.Comp.AllowArmourDeduction.Contains(traumaType) && armorDeduction >= 0) // DOWNSTREAM-TPirates: face mutilation
                 continue;
 
             if (armour.ArmorCoverage.Contains(coverage))
             {
-                deduction += armour.TraumaDeductions[traumaType];
+                deduction += armorDeduction; // DOWNSTREAM-TPirates: face mutilation
             }
         }
 
@@ -632,6 +636,8 @@ public partial class TraumaSystem
 
         if (trauma.Comp.TraumaTarget != null)
         {
+            TryRemoveFaceMutilationMarkings(trauma); // DOWNSTREAM-TPirates: face mutilation
+
             var ev = new TraumaBeingRemovedEvent(trauma, trauma.Comp.TraumaTarget.Value, trauma.Comp.TraumaSeverity, trauma.Comp.TraumaType);
             RaiseLocalEvent(inflicterWound, ref ev);
 
@@ -686,6 +692,12 @@ public partial class TraumaSystem
                 case TraumaType.NerveDamage:
                     targetChosen = target;
                     break;
+
+                #region DOWNSTREAM-TPirates: face mutilation
+                case TraumaType.FaceMutilation:
+                    targetChosen = target;
+                    break;
+                #endregion
             }
 
             if (targetChosen == null)
@@ -770,6 +782,12 @@ public partial class TraumaSystem
                         Logger.Debug($"Amputating woundable.");
                     }
                     break;
+
+                #region DOWNSTREAM-TPirates: face mutilation
+                case TraumaType.FaceMutilation:
+                    ApplyFaceMutilationTrauma(target, targetChosen.Value, inflicter);
+                    break;
+                #endregion
             }
 
             //Log.Debug($"A new trauma (Raw Severity: {severity}) was created on target: {ToPrettyString(target)}. Type: {trauma}.");
