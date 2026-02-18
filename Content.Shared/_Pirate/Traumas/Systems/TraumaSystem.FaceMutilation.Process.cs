@@ -28,11 +28,14 @@ public sealed partial class TraumaSystem
             return false;
         }
 
+        if (!TryComp<WoundComponent>(woundInflicter, out var woundComp))
+            return false;
+
         var deduction = GetTraumaChanceDeduction(
             woundInflicter,
             bodyPart.Body.Value,
             target,
-            Comp<WoundComponent>(woundInflicter).WoundSeverityPoint,
+            woundComp.WoundSeverityPoint,
             TraumaType.FaceMutilation,
             BodyPartType.Head);
 
