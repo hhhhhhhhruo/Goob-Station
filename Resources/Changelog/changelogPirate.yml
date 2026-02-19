@@ -1,0 +1,9 @@
+Name: Pirate Log
+Order: -2
+Entries:
+- author: luciusGodGame
+  changes:
+    - type: Add
+      message: add... changelog?
+  id: 1
+  time: '2026-02-19T15:57:48.0000000+00:00'

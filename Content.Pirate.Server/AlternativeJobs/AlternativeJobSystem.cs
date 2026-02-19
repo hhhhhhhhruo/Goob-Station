@@ -1,19 +1,24 @@
 using Content.Pirate.Common.AlternativeJobs;
 using Content.Server.Access.Components;
 using Content.Server.CrewManifest;
+using Content.Server.Chat.Managers;
 using Content.Shared._Shitcode._Pirate.AlternativeJobs;
 using Content.Shared.Access.Components;
 using Content.Shared.Access.Systems;
 using Content.Shared.GameTicking;
 using Content.Shared.Preferences;
 using Content.Shared.StatusIcon;
+using Content.Shared.Roles;
 using Robust.Shared.Prototypes;
+using Robust.Shared.Player;
 
 namespace Content.Pirate.Server.AlternativeJobs;
 
 public sealed class AlternativeJobSystem : EntitySystem, IAlternativeJobSystem
 {
     [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
+    [Dependency] private readonly ISharedPlayerManager _player = default!;
+    [Dependency] private readonly IChatManager _chat = default!;
 
     public override void Initialize()
     {
@@ -44,6 +49,13 @@ public sealed class AlternativeJobSystem : EntitySystem, IAlternativeJobSystem
         idCardComp.JobPrototype = alternativeJobPrototype.ParentJobId;
         // Change job title on id card
         Dirty(idCard, idCardComp);
+
+        // Notify the player about the alternative job name
+        if (TryComp<ActorComponent>(uid, out var actor) && _player.TryGetSessionById(actor.PlayerSession.UserId, out var session))
+        {
+            var parentJobProto = _prototypeManager.Index<JobPrototype>(alternativeJobPrototype.ParentJobId);
+            _chat.DispatchServerMessage(session, Loc.GetString("alternative-job-notify", ("newJobName", alternativeJobPrototype.LocalizedJobName), ("parentJobName", parentJobProto.LocalizedName)));
+        }
     }
 
     public bool TryGetAlternativeJob(string parentJobId, HumanoidCharacterProfile profile, out AlternativeJobPrototype alternativeJobPrototype)
