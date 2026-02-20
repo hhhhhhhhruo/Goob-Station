@@ -291,5 +291,5 @@
   sprite:
     - _Pirate/Ghosts/CrazyDraggy.rsi
   alpha: 0.8
-  ghostName: Блюспейс дракон
-  ghostDescription: Він дивится тобі прямо у очі, чи хоче він тебе з'їсти?
+  ghostName: "Блюспейс дракон"
+  ghostDescription: "Він дивится тобі прямо у очі, чи хоче він тебе з'їсти?"
