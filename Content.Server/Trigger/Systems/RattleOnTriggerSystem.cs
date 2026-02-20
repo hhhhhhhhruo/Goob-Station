@@ -1,12 +1,12 @@
 using Content.Server.Radio.EntitySystems;
 using Content.Server.Pinpointer;
-using Content.Server.Station.Systems;
 using Content.Shared.Mobs.Components;
 using Content.Shared.Trigger;
 using Content.Shared.Trigger.Components.Effects;
-using Robust.Shared.Map;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Utility;
+using Content.Server.Station.Systems; // DOWNSTREAM-TPirates: death rattle update
+using Robust.Shared.Map; // DOWNSTREAM-TPirates: death rattle update
 
 namespace Content.Server.Trigger.Systems;
 
@@ -15,8 +15,8 @@ public sealed class RattleOnTriggerSystem : EntitySystem
     [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
     [Dependency] private readonly RadioSystem _radio = default!;
     [Dependency] private readonly NavMapSystem _navMap = default!;
-    [Dependency] private readonly SharedTransformSystem _transform = default!;
-    [Dependency] private readonly StationSystem _station = default!;
+    [Dependency] private readonly SharedTransformSystem _transform = default!; // DOWNSTREAM-TPirates: death rattle update
+    [Dependency] private readonly StationSystem _station = default!; // DOWNSTREAM-TPirates: death rattle update
 
     public override void Initialize()
     {
@@ -43,7 +43,8 @@ public sealed class RattleOnTriggerSystem : EntitySystem
         if (!ent.Comp.Messages.TryGetValue(mobstate.CurrentState, out var messageId))
             return;
 
-        var posText = GetPositionText(target.Value, ent.Comp.ReportCoordinates);
+        // Gets the location of the user
+        var posText = GetPositionText(target.Value, ent.Comp.ReportCoordinates); // DOWNSTREAM-TPirates: death rattle update
 
         var message = Loc.GetString(messageId, ("user", target.Value), ("position", posText));
         // Sends a message to the radio channel specified by the implant

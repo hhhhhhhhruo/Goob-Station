@@ -35,6 +35,7 @@ public sealed partial class RattleOnTriggerComponent : BaseXOnTriggerComponent
     [DataField]
     public bool ReportCoordinates;
 
+    #region DOWNSTREAM-TPirates: death rattle update
     /// <summary>
     /// If true and the target is not on any station grid, mirror this message to <see cref="OffStationRelayChannel"/>.
     /// </summary>
@@ -46,4 +47,5 @@ public sealed partial class RattleOnTriggerComponent : BaseXOnTriggerComponent
     /// </summary>
     [DataField]
     public ProtoId<RadioChannelPrototype> OffStationRelayChannel = "Medical";
+    #endregion
 }
