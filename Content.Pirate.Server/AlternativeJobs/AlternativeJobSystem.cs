@@ -17,7 +17,6 @@ namespace Content.Pirate.Server.AlternativeJobs;
 public sealed class AlternativeJobSystem : EntitySystem, IAlternativeJobSystem
 {
     [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
-    [Dependency] private readonly ISharedPlayerManager _player = default!;
     [Dependency] private readonly IChatManager _chat = default!;
 
     public override void Initialize()
@@ -51,10 +50,12 @@ public sealed class AlternativeJobSystem : EntitySystem, IAlternativeJobSystem
         Dirty(idCard, idCardComp);
 
         // Notify the player about the alternative job name
-        if (TryComp<ActorComponent>(uid, out var actor) && _player.TryGetSessionById(actor.PlayerSession.UserId, out var session))
+        if (TryComp<ActorComponent>(uid, out var actor))
         {
-            var parentJobProto = _prototypeManager.Index<JobPrototype>(alternativeJobPrototype.ParentJobId);
-            _chat.DispatchServerMessage(session, Loc.GetString("alternative-job-notify", ("newJobName", alternativeJobPrototype.LocalizedJobName), ("parentJobName", parentJobProto.LocalizedName)));
+            if (_prototypeManager.TryIndex<JobPrototype>(alternativeJobPrototype.ParentJobId, out var parentJobProto))
+            {
+                _chat.DispatchServerMessage(actor.PlayerSession, Loc.GetString("alternative-job-notify", ("newJobName", alternativeJobPrototype.LocalizedJobName), ("parentJobName", parentJobProto.LocalizedName)));
+            }
         }
     }
 

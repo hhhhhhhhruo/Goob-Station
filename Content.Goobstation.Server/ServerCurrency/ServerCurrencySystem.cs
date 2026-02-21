@@ -75,10 +75,10 @@ namespace Content.Goobstation.Server.ServerCurrency
 
         private void OnRoundEndText(RoundEndTextAppendEvent ev)
         {
-            if (_players.PlayerCount < _goobcoinsMinPlayers)
+            if (_sandbox.IsSandboxEnabled) // Pirate
                 return;
 
-            if (_sandbox.IsSandboxEnabled) // Pirate
+            if (_players.PlayerCount < _goobcoinsMinPlayers)
                 return;
 
             var lowPopMultiplier = 1.0 - (_players.PlayerCount / (double)_players.MaxPlayers);
