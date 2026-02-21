@@ -456,7 +456,7 @@
             ]
         },
         {
-            "name": "commSAN",
+            "name": "comm_SAN",
             "directions": 4,
             "delays": [
                 [
