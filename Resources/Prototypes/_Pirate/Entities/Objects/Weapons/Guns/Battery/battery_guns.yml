@@ -257,6 +257,7 @@
     fireCost: 100
   - type: AmmoSelector
     prototypes:
+      - BulletDisabler
       - BulletEnergyGunLaser
       - BulletEnergyGunIon
   - type: UserInterface
