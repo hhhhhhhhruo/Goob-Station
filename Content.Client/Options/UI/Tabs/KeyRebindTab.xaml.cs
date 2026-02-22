@@ -231,6 +231,7 @@ namespace Content.Client.Options.UI.Tabs
             AddButton(ContentKeyFunctions.Sprint);
             InitToggleWalk();
             AddButton(ContentKeyFunctions.ToggleKnockdown);
+            AddButton(ContentKeyFunctions.ToggleCrawlingUnder); // Pirate - togglable under-table crawling
 
             AddHeader("ui-options-header-camera");
             AddButton(EngineKeyFunctions.CameraRotateLeft);
