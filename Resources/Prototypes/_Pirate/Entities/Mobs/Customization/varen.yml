@@ -25,7 +25,7 @@
   bodyPart: Tail
   markingCategory: Tail
   speciesRestriction: [Vulpkanin]
-#  playerRestriction: [Vareniko, v0id_]
+  playerRestriction: [Vareniko, v0id_]
   layering:
     queen_BACK: TailBehind
     queen_BACK-tip: TailBehind
