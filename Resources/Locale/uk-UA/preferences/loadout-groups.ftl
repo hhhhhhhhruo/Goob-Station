@@ -196,8 +196,6 @@ loadout-group-security-star = Зірка безпеки
 
 # Медицина
 
-# Медицина
-
 loadout-group-brigmedic-gloves = Рукавиці бригмедика
 
 # Медицина
