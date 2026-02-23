@@ -97,7 +97,7 @@ public class SharedCrawlUnderSystem : EntitySystem
         if (!TryComp<FixturesComponent>(uid, out var fixtures) || !TryComp<PhysicsComponent>(uid, out var physics))
             return;
 
-        var maskBits = (int) (CollisionGroup.MidImpassable | CollisionGroup.HighImpassable);
+        var maskBits = (int) (CollisionGroup.MidImpassable);
         bool canPass = !standing.Standing || standing.IsCrawlingUnder;
 
         foreach (var (id, fixture) in fixtures.Fixtures)
