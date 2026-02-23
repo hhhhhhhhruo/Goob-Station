@@ -366,7 +366,7 @@
 # Офіцер
 - type: loadoutGroup
   id: SecurityOfficerHead
-  name: loadout-group-security-officer-head
+  name: "головний убір Офіцера СБ"
   loadouts:
   - SecurityHelmetAlt
   - SecurityHelmetLight
@@ -376,7 +376,7 @@
 # Бригмедик
 - type: loadoutGroup
   id: BrigmedicGloves
-  name: loadout-group-brigmedic-gloves
+  name: "рукавиці бригмедика"
   loadouts:
   - CombatNitrileGloves
 
