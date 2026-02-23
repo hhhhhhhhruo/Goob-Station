@@ -298,7 +298,6 @@ public sealed class NanoChatCartridgeSystem : EntitySystem
         if (msg.RecipientNumber == null || msg.Content == null || card.Comp.Number == null)
             return;
 
-        // Pirate: pda fix
         if (!EnsureRecipientExists(card, msg.RecipientNumber.Value)) // Pirate: pda fix
             return;
 
@@ -367,7 +366,6 @@ public sealed class NanoChatCartridgeSystem : EntitySystem
     /// <param name="card">The card to check contacts for</param>
     /// <param name="recipientNumber">The recipient's number to check</param>
     /// <returns>True if the recipient exists or was created successfully</returns>
-    // Pirate: pda fix
     private bool EnsureRecipientExists(Entity<NanoChatCardComponent> card, uint recipientNumber, NanoChatRecipient? recipientInfo = null) // Pirate: pda fix
     {
         return _nanoChat.EnsureRecipientExists((card, card.Comp), recipientNumber, recipientInfo ?? GetCardInfo(recipientNumber)); // Pirate: pda fix
@@ -485,12 +483,14 @@ public sealed class NanoChatCartridgeSystem : EntitySystem
 
         _nanoChat.AddMessage((recipient, recipient.Comp), senderNumber.Value, message with { DeliveryFailed = false });
 
+        #region Pirate: pda fix
         var shouldNotifyUnread = recipient.Comp.IsClosed || _nanoChat.GetCurrentChat((recipient, recipient.Comp)) != senderNumber;
 
-        if (!recipient.Comp.NotificationsMuted && shouldNotifyUnread) // Pirate: pda fix
-            _audio.PlayPvs(RecipientMessageSound, recipient.Comp.PdaUid ?? recipient.Owner, RecipientMessageAudioParams); // Pirate: pda fix
+        if (!recipient.Comp.NotificationsMuted && shouldNotifyUnread)
+            _audio.PlayPvs(RecipientMessageSound, recipient.Comp.PdaUid ?? recipient.Owner, RecipientMessageAudioParams);
+        #endregion
 
-        if (shouldNotifyUnread)
+        if (shouldNotifyUnread) // Pirate: pda fix
             HandleUnreadNotification(recipient, message, (uint) senderNumber);
 
         var msgEv = new NanoChatMessageReceivedEvent(recipient);
@@ -661,4 +661,3 @@ public sealed class NanoChatCartridgeSystem : EntitySystem
         _cartridge.UpdateCartridgeUiState(loader, state);
     }
 }
-

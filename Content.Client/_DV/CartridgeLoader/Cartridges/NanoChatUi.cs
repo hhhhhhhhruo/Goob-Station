@@ -51,4 +51,4 @@ public sealed partial class NanoChatUi : UIFragment
         var message = new CartridgeUiMessage(nanoChatMessage);
         userInterface.SendMessage(message);
     }
-}
+} 
