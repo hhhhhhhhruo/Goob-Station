@@ -293,7 +293,7 @@
   alpha: 0.8
   ghostName: "Блюспейс дракон"
   ghostDescription: "Він дивится тобі прямо у очі, чи хоче він тебе з'їсти?"
-  
+
 - type: customGhost
   id: Vareniko-ghost
   ckey: Vareniko
@@ -311,3 +311,12 @@
   alpha: 1
   ghostName: BlackTank
   ghostDescription: Wawa!
+
+- type: customGhost
+  id: narinder-ghost
+  ckey: narinder
+  sprite:
+    - _Pirate/Ghosts/Narinder.rsi
+  alpha: 0.8
+  ghostName: "Narinder"
+  ghostDescription: "неко-інженер якого не зупинила смерть від продовження роботи , чомусь ви відчуваєте тепло та запах металу з кавою поруч з ним. RIG на спині показує незький рівень здоровя"
