@@ -298,6 +298,7 @@ public abstract class SharedNanoChatSystem : EntitySystem
         if (!Resolve(card, ref card.Comp))
             return false;
 
+        var changed = false; // Pirate: pda fix
         if (!card.Comp.Recipients.ContainsKey(recipientNumber))
         {
             // Only add if we have recipient info
@@ -305,15 +306,42 @@ public abstract class SharedNanoChatSystem : EntitySystem
                 return false;
 
             card.Comp.Recipients[recipientNumber] = recipientInfo.Value;
+            changed = true; // Pirate: pda fix
+        }
+        #region Pirate: pda fix
+        else if (recipientInfo is { } info)
+        {
+            // Enrich existing recipient data when we learn missing fields later.
+            var existing = card.Comp.Recipients[recipientNumber];
+            var updated = new NanoChatRecipient(existing.Number, existing.Name, existing.JobTitle, existing.HasUnread);
+
+            if (string.IsNullOrWhiteSpace(existing.Name) && !string.IsNullOrWhiteSpace(info.Name))
+                updated.Name = info.Name;
+
+            if (string.IsNullOrWhiteSpace(existing.JobTitle) && !string.IsNullOrWhiteSpace(info.JobTitle))
+                updated.JobTitle = info.JobTitle;
+
+            if (!updated.Equals(existing))
+            {
+                card.Comp.Recipients[recipientNumber] = updated;
+                changed = true;
+            }
         }
 
         // Ensure message list exists for this recipient
         if (!card.Comp.Messages.ContainsKey(recipientNumber))
+        {
             card.Comp.Messages[recipientNumber] = new List<NanoChatMessage>();
+            changed = true;
+        }
 
-        Dirty(card);
+        if (changed)
+            Dirty(card);
+        #endregion
+
         return true;
     }
 
     #endregion
 }
+

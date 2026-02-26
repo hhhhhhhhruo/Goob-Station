@@ -26,6 +26,8 @@ using Content.Shared._DV.CartridgeLoader.Cartridges;
 using Content.Shared._DV.NanoChat;
 using Content.Shared.PDA;
 using Content.Shared.Radio.Components;
+using Robust.Shared.Audio; // Pirate: pda fix
+using Robust.Shared.Audio.Systems; // Pirate: pda fix
 using Robust.Shared.Prototypes;
 using Robust.Shared.Timing;
 using Content.Shared.CCVar;
@@ -44,10 +46,23 @@ public sealed class NanoChatCartridgeSystem : EntitySystem
     [Dependency] private readonly StationSystem _station = default!;
     [Dependency] private readonly SharedUserInterfaceSystem _ui = default!;
     [Dependency] private readonly IConfigurationManager _cfgManager = default!;
+    [Dependency] private readonly SharedAudioSystem _audio = default!; // Pirate: pda fix
 
     // Messages in notifications get cut off after this point
     // no point in storing it on the comp
     private const int NotificationMaxLength = 64;
+    #region Pirate: pda fix
+    private static readonly SoundSpecifier SendSuccessSound = new SoundPathSpecifier("/Audio/_Pirate/Machines/terminal_success.ogg");
+    private static readonly SoundSpecifier SendErrorSound = new SoundPathSpecifier("/Audio/_Pirate/Machines/terminal_error.ogg");
+    private static readonly SoundSpecifier RecipientMessageSound = new SoundPathSpecifier("/Audio/Machines/twobeep.ogg");
+    private static readonly AudioParams RecipientMessageAudioParams = AudioParams.Default
+        .WithVolume(2f)
+        .WithMaxDistance(5f)
+        .WithPitchScale(1.2f);
+    private static readonly AudioParams SenderFeedbackAudioParams = AudioParams.Default
+        .WithVolume(1.5f)
+        .WithMaxDistance(5f);
+    #endregion
 
     private int _maxNameLength;
     private int _maxIdJobLength;
@@ -88,6 +103,7 @@ public sealed class NanoChatCartridgeSystem : EntitySystem
             if (cartridge.LoaderUid == null)
                 continue;
 
+            UpdateClosed((uid, nanoChat)); // Pirate: pda fix
             // Check if we need to update our card reference
             if (!TryComp<PdaComponent>(cartridge.LoaderUid, out var pda))
                 continue;
@@ -282,7 +298,7 @@ public sealed class NanoChatCartridgeSystem : EntitySystem
         if (msg.RecipientNumber == null || msg.Content == null || card.Comp.Number == null)
             return;
 
-        if (!EnsureRecipientExists(card, msg.RecipientNumber.Value))
+        if (!EnsureRecipientExists(card, msg.RecipientNumber.Value)) // Pirate: pda fix
             return;
 
         var content = msg.Content;
@@ -321,6 +337,9 @@ public sealed class NanoChatCartridgeSystem : EntitySystem
         var msgEv = new NanoChatMessageReceivedEvent(card);
         RaiseLocalEvent(ref msgEv);
 
+        if (deliveryFailed || !card.Comp.NotificationsMuted) // Pirate: pda fix
+            PlaySenderFeedbackSound((card, card.Comp), deliveryFailed); // Pirate: pda fix
+
         if (deliveryFailed)
             return;
 
@@ -330,15 +349,26 @@ public sealed class NanoChatCartridgeSystem : EntitySystem
         }
     }
 
+    #region Pirate: pda fix
+    private void PlaySenderFeedbackSound(Entity<NanoChatCardComponent> card, bool deliveryFailed)
+    {
+        var source = card.Comp.PdaUid ?? card.Owner;
+        if (Deleted(source))
+            return;
+
+        _audio.PlayPvs(deliveryFailed ? SendErrorSound : SendSuccessSound, source, SenderFeedbackAudioParams);
+    }
+    #endregion
+
     /// <summary>
     ///     Ensures a recipient exists in the sender's contacts.
     /// </summary>
     /// <param name="card">The card to check contacts for</param>
     /// <param name="recipientNumber">The recipient's number to check</param>
     /// <returns>True if the recipient exists or was created successfully</returns>
-    private bool EnsureRecipientExists(Entity<NanoChatCardComponent> card, uint recipientNumber)
+    private bool EnsureRecipientExists(Entity<NanoChatCardComponent> card, uint recipientNumber, NanoChatRecipient? recipientInfo = null) // Pirate: pda fix
     {
-        return _nanoChat.EnsureRecipientExists((card, card.Comp), recipientNumber, GetCardInfo(recipientNumber));
+        return _nanoChat.EnsureRecipientExists((card, card.Comp), recipientNumber, recipientInfo ?? GetCardInfo(recipientNumber)); // Pirate: pda fix
     }
 
     /// <summary>
@@ -453,7 +483,14 @@ public sealed class NanoChatCartridgeSystem : EntitySystem
 
         _nanoChat.AddMessage((recipient, recipient.Comp), senderNumber.Value, message with { DeliveryFailed = false });
 
-        if (recipient.Comp.IsClosed || _nanoChat.GetCurrentChat((recipient, recipient.Comp)) != senderNumber)
+        #region Pirate: pda fix
+        var shouldNotifyUnread = recipient.Comp.IsClosed || _nanoChat.GetCurrentChat((recipient, recipient.Comp)) != senderNumber;
+
+        if (!recipient.Comp.NotificationsMuted && shouldNotifyUnread)
+            _audio.PlayPvs(RecipientMessageSound, recipient.Comp.PdaUid ?? recipient.Owner, RecipientMessageAudioParams);
+        #endregion
+
+        if (shouldNotifyUnread) // Pirate: pda fix
             HandleUnreadNotification(recipient, message, (uint) senderNumber);
 
         var msgEv = new NanoChatMessageReceivedEvent(recipient);
@@ -481,8 +518,7 @@ public sealed class NanoChatCartridgeSystem : EntitySystem
                 message.SenderId,
                 senderRecipient with { HasUnread = true });
 
-        if (recipient.Comp.NotificationsMuted ||
-            recipient.Comp.PdaUid is not {} pdaUid ||
+        if (recipient.Comp.PdaUid is not {} pdaUid || // Pirate: pda fix
             !TryComp<CartridgeLoaderComponent>(pdaUid, out var loader) ||
             // Don't notify if the recipient has the NanoChat program open with this chat selected.
             (hasSelectedCurrentChat &&
@@ -493,7 +529,9 @@ public sealed class NanoChatCartridgeSystem : EntitySystem
         _cartridge.SendNotification(pdaUid,
             Loc.GetString("nano-chat-new-message-title", ("sender", senderName)),
             Loc.GetString("nano-chat-new-message-body", ("message", TruncateMessage(message.Content))),
-            loader);
+            loader, // Pirate: pda fix
+            playRingtone: false); // Pirate: pda fix
+
     }
 
     /// <summary>
@@ -583,7 +621,7 @@ public sealed class NanoChatCartridgeSystem : EntitySystem
             {
                 if (nanoChatCard.ListNumber && nanoChatCard.Number is uint nanoChatNumber && idCardComponent.FullName is string fullName && _station.GetOwningStation(entityId) == station)
                 {
-                    contacts.Add(new NanoChatRecipient(nanoChatNumber, fullName));
+                    contacts.Add(new NanoChatRecipient(nanoChatNumber, fullName, idCardComponent.LocalizedJobTitle)); // Pirate: pda fix
                 }
             }
             contacts.Sort((contactA, contactB) => string.CompareOrdinal(contactA.Name, contactB.Name));
