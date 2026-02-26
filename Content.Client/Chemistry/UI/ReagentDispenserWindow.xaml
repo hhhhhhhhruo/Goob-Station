@@ -119,6 +119,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                             </BoxContainer>
                         </BoxContainer>
                     </PanelContainer>
+                    <!-- Pirates: chem recipes -->
+                    <Label Text="{Loc 'reagent-dispenser-window-reagents-title'}"
+                           Margin="0 2 0 2" />
                     <GridContainer Name="ReagentList"
                                    HorizontalExpand="True"
                                    VerticalExpand="True"
@@ -146,3 +149,4 @@ SPDX-License-Identifier: AGPL-3.0-or-later
         </SplitContainer>
     </BoxContainer>
 </controls:FancyWindow>
+

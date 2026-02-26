@@ -1,0 +1,7 @@
+- type: entity
+  id: ChemRecipeDiskPirate
+  parent: ChemRecipeDisk
+  name: recipe disk
+  components:
+  - type: StaticPrice
+    price: 50
