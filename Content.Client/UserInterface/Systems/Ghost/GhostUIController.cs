@@ -65,6 +65,7 @@ public sealed class GhostUIController : UIController, IOnSystemChanged<GhostSyst
         system.PlayerDetached += OnPlayerDetached;
         system.GhostWarpsResponse += OnWarpsResponse;
         system.GhostRoleCountUpdated += OnRoleCountUpdated;
+        system.GhostWarpObserverCountUpdated += OnObserverCountUpdated; // DOWNSTREAM-TPirates: ghost follow menu update
     }
 
     public void OnSystemUnloaded(GhostSystem system)
@@ -75,6 +76,7 @@ public sealed class GhostUIController : UIController, IOnSystemChanged<GhostSyst
         system.PlayerDetached -= OnPlayerDetached;
         system.GhostWarpsResponse -= OnWarpsResponse;
         system.GhostRoleCountUpdated -= OnRoleCountUpdated;
+        system.GhostWarpObserverCountUpdated -= OnObserverCountUpdated; // DOWNSTREAM-TPirates: ghost follow menu update
     }
 
     public void UpdateGui()
@@ -85,7 +87,7 @@ public sealed class GhostUIController : UIController, IOnSystemChanged<GhostSyst
         }
 
         Gui.Visible = _system?.IsGhost ?? false;
-        Gui.Update(_system?.AvailableGhostRoleCount, _system?.Player?.CanReturnToBody, _system?.Player?.CanEnterGhostBar, _system?.Player?.CanTakeGhostRoles); // Goob edit
+        Gui.Update(_system?.AvailableGhostRoleCount, _system?.Player?.CanReturnToBody, _system?.Player?.CanTakeGhostRoles);
     }
 
     private void OnPlayerRemoved(GhostComponent component)
@@ -121,6 +123,13 @@ public sealed class GhostUIController : UIController, IOnSystemChanged<GhostSyst
         window.Populate();
     }
 
+    #region DOWNSTREAM-TPirates: ghost follow menu update
+    private void OnObserverCountUpdated(NetEntity entity, int count)
+    {
+        Gui?.TargetWindow?.UpdateObserverCount(entity, count);
+    }
+    #endregion
+
     private void OnRoleCountUpdated(GhostUpdateGhostRoleCountEvent msg)
     {
         UpdateGui();
@@ -146,10 +155,9 @@ public sealed class GhostUIController : UIController, IOnSystemChanged<GhostSyst
         Gui.RequestWarpsPressed += RequestWarps;
         Gui.ReturnToBodyPressed += ReturnToBody;
         Gui.GhostRolesPressed += GhostRolesPressed;
-        Gui.GhostBarPressed += GhostBarPressed; // Goobstation - Ghost Bar
-        Gui.GhostBarWindow.SpawnButtonPressed += GhostBarSpawnPressed; // Goobstation - Ghost Bar
         Gui.TargetWindow.WarpClicked += OnWarpClicked;
         Gui.TargetWindow.OnGhostnadoClicked += OnGhostnadoClicked;
+        Gui.TargetWindow.RefreshPressed += OnRefreshPressed; // DOWNSTREAM-TPirates: ghost follow menu update
 
         UpdateGui();
     }
@@ -162,9 +170,8 @@ public sealed class GhostUIController : UIController, IOnSystemChanged<GhostSyst
         Gui.RequestWarpsPressed -= RequestWarps;
         Gui.ReturnToBodyPressed -= ReturnToBody;
         Gui.GhostRolesPressed -= GhostRolesPressed;
-        Gui.GhostBarPressed -= GhostBarPressed; // Goobstation - Ghost Bar
-        Gui.GhostBarWindow.SpawnButtonPressed -= GhostBarSpawnPressed; // Goobstation - Ghost Bar
         Gui.TargetWindow.WarpClicked -= OnWarpClicked;
+        Gui.TargetWindow.RefreshPressed -= OnRefreshPressed; // DOWNSTREAM-TPirates: ghost follow menu update
 
         Gui.Hide();
     }
@@ -181,18 +188,15 @@ public sealed class GhostUIController : UIController, IOnSystemChanged<GhostSyst
         Gui?.TargetWindow.OpenCentered();
     }
 
+    #region DOWNSTREAM-TPirates: ghost follow menu update
+    private void OnRefreshPressed()
+    {
+        _system?.RequestWarps();
+    }
+    #endregion
+
     private void GhostRolesPressed()
     {
         _system?.OpenGhostRoles();
-    }
-
-    private void GhostBarPressed() // Goobstation - Ghost Bar
-    {
-        Gui?.GhostBarWindow.OpenCentered();
-    }
-
-    private void GhostBarSpawnPressed() // Goobstation - Ghost Bar
-    {
-        _system?.GhostBarSpawn();
     }
 }

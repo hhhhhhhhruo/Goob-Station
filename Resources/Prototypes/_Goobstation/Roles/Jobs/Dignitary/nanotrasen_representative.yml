@@ -104,6 +104,16 @@
       time: 180000  #50 hours
     - !type:AgeRequirement
       requiredAge: 21
+    - !type:TraitsRequirement # Pirate
+      inverted: true
+      traits:
+      - Foreigner
+      - ForeignerLight
+      - DeafTrait
+      - Blindness
+      - Narcolepsy
+      - Muted
+      - WheelchairBound # Pirate end
     #- !type:SpeciesRequirement # Pirate remove requirement
     #  inverted: true
     #  species:
@@ -112,15 +122,6 @@
     - !type:CharacterEmployerRequirement
       employers:
       - NanoTrasen
-    - !type:CharacterLifepathRequirement
-      inverted: true
-      lifepaths:
-      - Cultist
-      - Smuggler
-      - ExCriminal
-      - Enforcer
-      - Hacker
-      - ConArtist
     # Pirate contractor end
   weight: 20
   startingGear: NanotrasenRepresentativeGear
@@ -130,7 +131,7 @@
   supervisors: job-supervisors-centcom
   canBeAntag: false
   guides:
-  - NanotrasenRep SOP
+  - NanotrasenRepSOP
   - SOP
   - SpaceLaw
   - Writing

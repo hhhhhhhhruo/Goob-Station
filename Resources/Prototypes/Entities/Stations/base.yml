@@ -81,6 +81,7 @@
         Security: [ ]
         Service: [ ]
     - type: StationCargoBountyDatabase
+    - type: StationXenobiologyBountyDatabase # Goobstaton
 
 - type: entity
   id: BaseStationJobsSpawning
@@ -128,7 +129,7 @@
             - type: ProtectedGrid
             - type: TradeStation
           paths:
-            - /Maps/Shuttles/trading_outpost.yml
+            - /Maps/_Goobstation/Shuttles/trading_outpost.yml #Goobstation
           nameDataset: TradeStationNames
         # Spawn last
         ruins: !type:GridSpawnGroup

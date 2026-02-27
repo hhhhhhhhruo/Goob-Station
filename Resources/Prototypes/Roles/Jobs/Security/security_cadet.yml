@@ -101,7 +101,18 @@
   playTimeTracker: JobSecurityCadet
   requirements:
     - !type:OverallPlaytimeRequirement
-      time: 36000 #10 hrs
+      time: 36000 #10 hrs # Pirate
+    - !type:TraitsRequirement # Pirate
+      inverted: true
+      traits:
+      - Foreigner
+      - ForeignerLight
+      - DeafTrait
+      - MovementImpaired
+      - Blindness
+      - Narcolepsy
+      - Muted
+      - WheelchairBound # Pirate end
     # - !type:DepartmentTimeRequirement # Pirate
     #   department: Security # Pirate
     #   time: 18000 #5 hrs # Pirate
@@ -112,15 +123,6 @@
       - NanoTrasen
       - ZavodskoiInterstellar
       - PMCG
-    - !type:CharacterLifepathRequirement
-      inverted: true
-      lifepaths:
-      - Cultist
-      - Smuggler
-      - ExCriminal
-      - Enforcer
-      - Hacker
-      - ConArtist
     # Pirate contractor end
   startingGear: SecurityCadetGear
   icon: "JobIconSecurityCadet"
@@ -128,8 +130,8 @@
   canBeAntag: false
   guides: # goobstation
   - Security
-  - OfficerCadet SOP
-  - Searches SOP
+  - OfficerCadetSOP
+  - SearchesSOP
   goobcoins: 30 #Goob content
   access:
   - Security

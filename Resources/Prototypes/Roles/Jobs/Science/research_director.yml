@@ -142,10 +142,18 @@
     time: 18000 # 5 hours
   - !type:RoleTimeRequirement
     role: JobScientist
-    time: 18000 #5 hrs
+    time: 21600 #6 hrs
   - !type:DepartmentTimeRequirement
     department: Science
     time: 36000 #10 hrs
+  - !type:TraitsRequirement # Pirate
+      inverted: true
+      traits:
+      - DeafTrait
+      - Blindness
+      - Narcolepsy
+      - Muted
+      - WheelchairBound # Pirate end
   #- !type:SpeciesRequirement # Pirate remove requirement
   #  inverted: true
   #  species:
@@ -155,15 +163,6 @@
     employers:
     - NanoTrasen
     - Interdyne
-  - !type:CharacterLifepathRequirement
-    inverted: true
-    lifepaths:
-    - Cultist
-    - Smuggler
-    - ExCriminal
-    - Enforcer
-    - Hacker
-    - ConArtist
   # Pirate contractor end
   weight: 10
   startingGear: ResearchDirectorGear
@@ -174,8 +173,8 @@
   guides: # goobstation
   - Science
   - Command
-  - ResearchDirector SOP
-  - Science SOP
+  - ResearchDirectorSOP
+  - ScienceSOP
   goobcoins: 40 #Goob content
   access:
   - Research
@@ -184,8 +183,8 @@
   - ResearchDirector
   - Brig
   - Cryogenics
-  - External # goobstation
-  - Mantis
+  - External # Goobstation
+  - Mantis # Pirate
   special:
   - !type:AddImplantSpecial
     implants: [ MindShieldImplant ]

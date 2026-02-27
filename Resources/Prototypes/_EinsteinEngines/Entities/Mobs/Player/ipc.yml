@@ -45,6 +45,7 @@
   - type: SwappableInstrument
     instrumentList:
       "Daw": { 0: 0 }
+  - type: ScreenSaver # DOWNSTREAM-TPirates: IPC screens
   - type: UserInterface
     interfaces:
       enum.InstrumentUiKey.Key:
@@ -66,6 +67,8 @@
         requireInputValidation: false
       enum.SurgeryUIKey.Key: # Shitmed
         type: SurgeryBui
+      enum.RadarConsoleUiKey.Key: #goob - contractor
+        type: RadarConsoleBoundUserInterface
   # Goobstation Start - Energycrit
   # - type: PowerCellSlot
   #   cellSlotId: cell_slot

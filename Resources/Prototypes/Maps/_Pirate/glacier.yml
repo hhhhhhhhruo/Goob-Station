@@ -37,6 +37,7 @@
             Janitor: [ 2, 2 ]
             Chaplain: [ 2, 2 ]
             Librarian: [ 1, 1 ]
+            RadioHost: [ 1, 1 ]
           #engineering
             AtmosphericTechnician: [ 1, 2 ]
             StationEngineer: [ 2, 3 ]

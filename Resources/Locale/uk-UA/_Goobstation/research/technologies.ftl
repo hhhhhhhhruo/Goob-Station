@@ -40,3 +40,7 @@ research-technology-xeno-biology = Ксенобіологія
 research-technology-bluespace-construction-storage = Будівельне Блюспейс-Сховище
 research-technology-plumbing = Технології трубопроводу
 research-technology-extended-communication = Розширені комунікації
+research-technology-xenobiology = Ксенобіологічне обладнання
+research-technology-radio-music-communication = Радіомузичні комунікації
+research-technology-xenobag-holding = Блюспейсне ксенобіологічне обладнання
+research-technology-bluespace-munitions = Боєприпаси Блюспейсу

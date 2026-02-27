@@ -857,6 +857,10 @@
         damage:
           types:
             Caustic: 0.3
+      # Goobstation
+      - !type:DiseaseProgressChange
+        affectedType: OwnCells
+        progressModifier: -0.07 # anti-cancer
 
 - type: reagent
   id: PolypyryliumOligomers
@@ -1446,7 +1450,14 @@
             Heat: -0.2
             Shock: -0.2
             Cold: -0.2
-            Holy: 1 # Pirate
+      - !type:HealthChange # Pirate - Holy damage without friendly fire :D
+        damage:
+          types:
+            Holy: 1
+        conditions:
+        - !type:HasComponentCondition
+          components:
+          - WeakToHoly
 
   reactiveEffects:
     Extinguish:
@@ -1725,6 +1736,10 @@
   metabolisms:
     Medicine:
       effects:
+      - !type:HealthChange #Goobstation
+        damage:
+          types:
+            Radiation: -0.25 #Goobend
       - !type:GenericStatusEffect
         key: RadiationProtection
         component: RadiationProtection
