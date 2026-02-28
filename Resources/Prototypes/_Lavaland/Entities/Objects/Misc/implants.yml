@@ -2,7 +2,7 @@
   parent: BaseSubdermalImplant
   id: DeathRattleLavalandImplant
   name: lavaland death rattle implant
-  description: This implant will inform the Supply radio channel should the user die. Works only on lavaland surface and tells exact coordinates of death.
+  description: This implant informs the local Supply channel and relays to station Medical and Supply channels when the user is critical or dead. Works off-station; on death, exact coordinates are transmitted. # Pirates: death rattle update
   categories: [ HideSpawnMenu ]
   components:
     - type: SubdermalImplant
