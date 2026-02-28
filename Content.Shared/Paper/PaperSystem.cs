@@ -299,6 +299,14 @@ public sealed class PaperSystem : EntitySystem
 
     private void OnMacroMenuUsedMessage(Entity<PaperComponent> entity, ref PaperMacroMenuUsedMessage args)
     {
+        if (args.Action != PaperAction.Write || entity.Comp.Mode != PaperAction.Write)
+            return;
+
+        var ev = new PaperWriteAttemptEvent(entity.Owner);
+        RaiseLocalEvent(args.Actor, ref ev);
+        if (ev.Cancelled)
+            return;
+
         _audio.PlayPvs(entity.Comp.Sound, entity);
     }
 

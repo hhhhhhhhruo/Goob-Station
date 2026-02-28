@@ -147,6 +147,12 @@ public sealed partial class PaperComponent : Component
     [Serializable, NetSerializable]
     public sealed class PaperMacroMenuUsedMessage : BoundUserInterfaceMessage
     {
+        public readonly PaperAction Action;
+
+        public PaperMacroMenuUsedMessage(PaperAction action)
+        {
+            Action = action;
+        }
     }
 
     [Serializable, NetSerializable]

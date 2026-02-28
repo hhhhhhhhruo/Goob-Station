@@ -140,6 +140,6 @@ public sealed class PaperBoundUserInterface : BoundUserInterface
 
     private void OnMacroMenuUsed()
     {
-        SendMessage(new PaperMacroMenuUsedMessage());
+        SendMessage(new PaperMacroMenuUsedMessage(PaperAction.Write));
     }
 }
