@@ -1,6 +1,7 @@
 using Content.Server.Radio.EntitySystems;
 using Content.Server.Pinpointer;
 using Content.Shared.Mobs.Components;
+using Content.Shared.Radio;
 using Content.Shared.Trigger;
 using Content.Shared.Trigger.Components.Effects;
 using Robust.Shared.Prototypes;
@@ -55,7 +56,22 @@ public sealed class RattleOnTriggerSystem : EntitySystem
             return;
 
         if (TryGetRelaySourceGrid(out var relaySource))
-            _radio.SendRadioMessage(ent.Owner, message, _prototypeManager.Index(ent.Comp.OffStationRelayChannel), relaySource);
+        {
+            var sentRelayChannels = new HashSet<ProtoId<RadioChannelPrototype>>();
+            var sameMapAsRelaySource = pos.MapId == Transform(relaySource).MapID;
+
+            foreach (var relayChannel in ent.Comp.OffStationRelayChannels)
+            {
+                // Avoid duplicate same-channel broadcasts when off-station but still on the station map.
+                if (sameMapAsRelaySource && relayChannel == ent.Comp.RadioChannel)
+                    continue;
+
+                if (!sentRelayChannels.Add(relayChannel))
+                    continue;
+
+                _radio.SendRadioMessage(ent.Owner, message, _prototypeManager.Index(relayChannel), relaySource);
+            }
+        }
         #endregion
     }
     #region Pirates: death rattle update

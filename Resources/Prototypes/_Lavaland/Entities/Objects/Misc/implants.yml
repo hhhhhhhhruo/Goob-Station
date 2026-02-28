@@ -25,7 +25,9 @@
         Critical: lavaland-deathrattle-implant-critical-message # Pirates: death rattle update
       reportCoordinates: true
       relayToStationWhenOffStation: true # Pirates: death rattle update
-      offStationRelayChannel: Medical # Pirates: death rattle update
+      offStationRelayChannels: # Pirates: death rattle update
+      - Medical
+      - Supply
 
 - type: entity
   id: DeathRattleLavalandImplanter
