@@ -128,3 +128,9 @@ Entries:
       message: Кастомний гост для Хруо
   id: 13
   time: '2026-03-01T20:39:56.0000000+00:00'
+- author: AgentMaper
+  changes:
+    - type: Add
+      message: Додана станція GateTP
+  id: 14
+  time: '2026-03-01T20:42:43.0000000+00:00'
