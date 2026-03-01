@@ -1,8 +1,21 @@
 - type: construction
-  id: PlastitaniumWallOnyx
+  id: WallPlastitaniumOnyx
   graph: Girder
   startNode: start
   targetNode: plastitaniumWallOnyx
+  category: construction-category-structures
+  objectType: Structure
+  placementMode: SnapgridCenter
+  canRotate: false
+  canBuildInImpassable: false
+  conditions:
+    - !type:TileNotBlocked
+    
+- type: construction
+  id: PlastitaniumWindowOnyx
+  graph: Girder
+  startNode: start
+  targetNode: plastitaniumWindowOnyx
   category: construction-category-structures
   objectType: Structure
   placementMode: SnapgridCenter
