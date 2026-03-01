@@ -1,7 +1,7 @@
 - type: entity
   parent: BaseSubdermalImplant
   id: DeathRattleLavalandImplant
-  name: lavaland death rattle implant
+  name: "імплант передсмертного хрипу Лаваленду"
   description: This implant informs the local Supply channel and relays to station Medical and Supply channels when the user is critical or dead. Works off-station; on death, exact coordinates are transmitted. # Pirates: death rattle update
   categories: [ HideSpawnMenu ]
   components:
