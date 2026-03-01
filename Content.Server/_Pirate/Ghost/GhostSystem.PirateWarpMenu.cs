@@ -26,6 +26,7 @@ using Content.Shared.StationAi;
 using Content.Shared.StatusIcon;
 using Content.Shared.Warps;
 using Content.Shared.Body.Organ;
+using Content.Shared.Bed.Cryostorage;
 using Content.Goobstation.Shared.Blob.Components;
 using Robust.Server.Player;
 using Robust.Shared.Containers;
@@ -150,8 +151,8 @@ public sealed partial class GhostSystem
     {
         if (HasComp<StationAiHeldComponent>(uid) ||
             HasComp<StationAiOverlayComponent>(uid) ||
-            HasComp<StationAiVisionComponent>(uid) ||
-            HasComp<StationAiHoloComponent>(uid))
+            HasComp<StationAiHoloComponent>(uid) ||
+            HasComp<StationAiCoreComponent>(uid))
             return true;
         return false;
     }
@@ -359,6 +360,10 @@ public sealed partial class GhostSystem
 
             var target = ResolvePlayerWarpTarget(ownerUid);
             if (target == except || !seenTargets.Add(target))
+                continue;
+
+            // Cryosleeped players are moved to a paused map and should not appear in the warp menu.
+            if (HasComp<CryostorageContainedComponent>(target) && IsPaused(target))
                 continue;
 
             // Hide internal attached organs/brains to avoid duplicate entries (body + its internal brain).
