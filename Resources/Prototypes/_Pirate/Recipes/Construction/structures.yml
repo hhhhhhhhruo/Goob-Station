@@ -37,7 +37,7 @@
 - type: construction
   id: BlastDoorOnyxCorner
   graph: BlastDoorOnyxCorner
-  startNode: startc
+  startNode: start
   targetNode: blastdoorOnyxCorner
   category: construction-category-structures
   objectType: Structure

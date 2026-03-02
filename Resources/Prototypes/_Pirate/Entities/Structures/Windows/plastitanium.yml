@@ -83,4 +83,4 @@
     fuelCost: 40
     doAfterDelay: 10
   - type: StaticPrice
-    price: 2250
+    price: 3000

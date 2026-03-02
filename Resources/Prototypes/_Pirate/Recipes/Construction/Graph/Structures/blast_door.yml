@@ -112,9 +112,9 @@
 
 - type: constructionGraph
   id: BlastDoorOnyxCorner
-  start: startc
+  start: start
   graph:
-    - node: startc
+    - node: start
       edges:
         - to: frame1c
           completed:
@@ -138,7 +138,7 @@
             - material: Cable
               amount: 5
               doAfter: 2
-        - to: startc
+        - to: start
           conditions:
             - !type:EntityAnchored
               anchored: false
@@ -219,4 +219,3 @@
           steps:
             - tool: Anchoring
               doAfter: 2
-              
