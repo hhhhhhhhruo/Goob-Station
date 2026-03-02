@@ -10,7 +10,8 @@
 job-name-futureagent = Агент Майбутнього
 job-name-salvagediver = Рятувальник-водолаз
 job-name-ntr = Представник NT
-job-name-bs = Синій Щит
+job-name-bso = Офіцер Блакитного Щита
+job-name-bs = Блакитний Щит
 job-name-overall = Загальний
 
 job-name-exec = Виконавчий Доступ
@@ -36,7 +37,7 @@ job-name-governmentman = G-мен
 job-name-conquest = Завойовник
 job-name-mercenarycaptain = Капітан найманців
 
-JobBlueshieldOfficer = Офіцер Синього Щита
+JobBlueshieldOfficer = Офіцер Блакитного Щита
 JobNanotrasenRepresentative = Представник NT
 JobNanotrasenCareerTrainer = Кар'єрний тренер Nanotrasen
 JobHecuOperative = Оперативник HECU

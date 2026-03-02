@@ -1,0 +1,6 @@
+- type: entity
+  name: "молот Синґулота"
+  parent: SingularityHammer
+  id: SingulothsHammer
+  components:
+  - type: Unremoveable

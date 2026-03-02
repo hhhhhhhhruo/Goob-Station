@@ -115,6 +115,7 @@
       priority: 9
     recipeDiskSlot: # Pirate: chem recipes
       name: reagent-dispenser-component-slot-name-disk
+      priority: 10
       insertSound:
         path: /Audio/Machines/terminal_insert_disc.ogg
       ejectSound:

@@ -37,15 +37,15 @@ public sealed partial class RattleOnTriggerComponent : BaseXOnTriggerComponent
 
     #region Pirates: death rattle update
     /// <summary>
-    /// If true and the target is not on any station grid, mirror this message to <see cref="OffStationRelayChannel"/>.
+    /// If true and the target is not on any station grid, mirror this message to <see cref="OffStationRelayChannels"/>.
     /// </summary>
     [DataField]
     public bool RelayToStationWhenOffStation;
 
     /// <summary>
-    /// The radio channel used for off-station relay messages.
+    /// Radio channels used for off-station relay messages.
     /// </summary>
     [DataField]
-    public ProtoId<RadioChannelPrototype> OffStationRelayChannel = "Medical";
+    public List<ProtoId<RadioChannelPrototype>> OffStationRelayChannels = new();
     #endregion
 }
