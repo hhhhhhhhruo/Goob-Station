@@ -96,3 +96,8 @@
   id: LoadoutRubberStampDeputyInterdyne
   equipment:
     back: RubberStampDeputyInterdyne
+
+- type: loadout
+  id: LoadoutEncryptionKeyInterdyne
+  equipment:
+    id: EncryptionKeyInterdyne

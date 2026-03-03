@@ -60,6 +60,7 @@
     accentHColor: "#d7d7d0"
     accentVColor: "#d7d7d0"
   - type: Icon
+    sprite: _Pirate/Objects/Devices/pda.rsi
     state: pda-interdyne-officer
   - type: CartridgeLoader
     preinstalled:
@@ -92,6 +93,7 @@
     accentHColor: "#d7d7d0"
     accentVColor: "#d7d7d0"
   - type: Icon
+    sprite: _Pirate/Objects/Devices/pda.rsi
     state: pda-interdyne-deputy
   - type: CartridgeLoader
     preinstalled:
@@ -122,6 +124,7 @@
   - type: PdaBorderColor
     borderColor: "#1e453d"
   - type: Icon
+    sprite: _Pirate/Objects/Devices/pda.rsi
     state: pda-interdyne
   - type: CartridgeLoader
     preinstalled:
