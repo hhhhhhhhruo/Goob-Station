@@ -85,11 +85,11 @@ public sealed partial class PhotoCameraWindow : FancyWindow
     {
         if (function == EngineKeyFunctions.MoveUp)
             MoveInput.Y = MoveInput.Y + delta;
-        if (function == EngineKeyFunctions.MoveDown)
+        else if (function == EngineKeyFunctions.MoveDown)
             MoveInput.Y = MoveInput.Y - delta;
-        if (function == EngineKeyFunctions.MoveRight)
+        else if (function == EngineKeyFunctions.MoveRight)
             MoveInput.X = MoveInput.X + delta;
-        if (function == EngineKeyFunctions.MoveLeft)
+        else if (function == EngineKeyFunctions.MoveLeft)
             MoveInput.X = MoveInput.X - delta;
     }
     //endregion Control
