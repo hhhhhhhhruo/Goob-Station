@@ -51,7 +51,13 @@ public sealed partial class RoundEndSummaryWindow
             Name = Loc.GetString("round-end-summary-window-photo-album-tab-title")
         };
 
-        stationAlbumTab.RemoveAllChildren();
+        var stationAlbumTab = new BoxContainer
+        {
+            Orientation = LayoutOrientation.Vertical,
+            Name = Loc.GetString("round-end-summary-window-photo-album-tab-title")
+        };
+
+        if (stationAlbumSystem.Albums is null || stationAlbumSystem.Albums.Count == 0)
 
         if (stationAlbumSystem.Albums is null || stationAlbumSystem.Albums.Count == 0)
             return null;
