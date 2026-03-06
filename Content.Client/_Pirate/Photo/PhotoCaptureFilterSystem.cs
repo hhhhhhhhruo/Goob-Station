@@ -29,7 +29,21 @@ public sealed class PhotoCaptureFilterSystem : EntitySystem
     private int _nextScopeId;
     private readonly Dictionary<int, ScopeData> _activeScopes = new();
 
-    public bool SuppressStatusIconsForPhotoCapture => _activeScopes.Count > 0;
+    public bool SuppressStatusIconsForPhotoCapture
+    {
+        get
+        {
+            CleanupExpiredScopes();
+
+            foreach (var (_, scope) in _activeScopes)
+            {
+                if ((scope.Mask & PhotoCaptureSuppressionMask.StatusIndicators) != 0)
+                    return true;
+            }
+
+            return false;
+        }
+    }
 
     /// <summary>
     /// Begins suppression for a specific eye (or globally when eye is null).

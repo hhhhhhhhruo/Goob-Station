@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 using Content.Client.Sprite;
+using Content.Client.Stealth;
 using Content.Client.Viewport;
 using Content.Shared.Mobs.Components;
 using Content.Shared.Stealth.Components;
@@ -24,6 +25,7 @@ public sealed class PhotoCaptureEntityDetectorSystem : EntitySystem
 
     [Dependency] private readonly OccluderSystem _occluderSystem = default!;
     [Dependency] private readonly SpriteTreeSystem _spriteTree = default!;
+    [Dependency] private readonly StealthSystem _stealthSystem = default!;
     private EntityQuery<MobStateComponent> _mobStateQuery = default!;
     private EntityQuery<FadingSpriteComponent> _fadingQuery = default!;
     private EntityQuery<StealthComponent> _stealthQuery = default!;
@@ -38,6 +40,8 @@ public sealed class PhotoCaptureEntityDetectorSystem : EntitySystem
 
     public List<NetEntity> CaptureVisibleEntities(ScalingViewport viewport, int maxEntities = 256)
     {
+        const float MinVisibleFraction = 0.05f;
+
         var eye = viewport.Eye;
         if (eye == null)
             return new List<NetEntity>();
@@ -69,10 +73,16 @@ public sealed class PhotoCaptureEntityDetectorSystem : EntitySystem
             if (!_mobStateQuery.HasComp(entity))
                 continue;
 
+            var fadingVisibleFraction = 1f;
             if (_fadingQuery.HasComp(entity))
-                continue;
+                fadingVisibleFraction = System.Math.Clamp(sprite.Component.Color.A, 0f, 1f);
 
-            if (_stealthQuery.TryGetComponent(entity, out var stealth) && stealth.Enabled)
+            var stealthVisibleFraction = 1f;
+            if (_stealthQuery.TryGetComponent(entity, out var stealth))
+                stealthVisibleFraction = System.Math.Clamp(_stealthSystem.GetVisibility(entity, stealth), 0f, 1f);
+
+            var visibleFraction = fadingVisibleFraction * stealthVisibleFraction;
+            if (visibleFraction < MinVisibleFraction)
                 continue;
 
             if (IsOccluded(eye.Position.MapId, eyeWorldPosition, sprite.Uid, sprite.Transform.WorldPosition))
