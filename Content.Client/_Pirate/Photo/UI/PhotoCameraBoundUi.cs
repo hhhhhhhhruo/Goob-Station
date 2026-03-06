@@ -60,6 +60,7 @@ public sealed class PhotoCameraBoundUserInterface : BoundUserInterface
 
         source.Global = true;
         source.Looping = true;
+        // Start muted; volume fades in when camera moves (see UpdateControl)
         source.Volume = float.NegativeInfinity;
         source.Restart();
 
