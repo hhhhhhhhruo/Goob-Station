@@ -11,10 +11,7 @@ public sealed partial class PhotoSystem : SharedPhotoSystem
 {
     public Dictionary<PhotoCameraComponent, PhotoCameraBoundUserInterface> ActiveCameras = new();
 
-    public override void Initialize()
-    {
-        base.Initialize();
-    }
+    public override void Update(float frameTime)
 
     public override void Update(float frameTime)
     {
