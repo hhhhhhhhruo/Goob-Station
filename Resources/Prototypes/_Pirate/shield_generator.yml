@@ -14,7 +14,6 @@
       path: /Audio/Ambience/Objects/anomaly_generator.ogg
   - type: Sprite
     sprite: _Pirate/Structures/ShuttleComponents/shield.rsi
-    snapCardinals: true
     layers:
     - state: control
     - state: control_on
@@ -28,7 +27,6 @@
         enum.PowerDeviceVisualLayers.Powered:
           True: { visible: true }
           False: { visible: false }
-    snapCardinals: true
   - type: Physics
     bodyType: Static
   - type: Transform
@@ -90,7 +88,6 @@
     maxDraw: 100000 # Base is 150000
     unpoweredBonus: 7 # Base is 6
     shieldColor: "#FF3333"
-    collisionResistanceMultiplier: 1.0
     powerUpSound: !type:SoundPathSpecifier
         path: "/Audio/Effects/teleport_arrival.ogg"
         params:
@@ -115,7 +112,6 @@
     maxDraw: 100000 # Base is 150000
     unpoweredBonus: 7 # Base is 6
     shieldColor: "#FF3333"
-    collisionResistanceMultiplier: 0.05
 
 # Medium-End
 - type: entity
@@ -132,10 +128,8 @@
     damageLimit: 40000
     damageOverloadTimePunishment: 100
     shieldColor: "#9933FF"
-    collisionResistanceMultiplier: 0.6
   - type: Sprite
     sprite: _Pirate/Structures/ShuttleComponents/shield.rsi
-    snapCardinals: true
     layers:
     - state: control
     - state: control_on
@@ -201,10 +195,8 @@
     damageLimit: 5000
     damageOverloadTimePunishment: 80
     shieldColor: "#3399FF"
-    collisionResistanceMultiplier: 0.5
   - type: Sprite
     sprite: _Pirate/Structures/ShuttleComponents/shield.rsi
-    snapCardinals: true
     layers:
     - state: control
     - state: control_on
