@@ -9,7 +9,8 @@ namespace Content.Client._Pirate.Photo;
 
 public sealed partial class PhotoSystem : SharedPhotoSystem
 {
-    public Dictionary<PhotoCameraComponent, PhotoCameraBoundUserInterface> ActiveCameras = new();
+    private readonly Dictionary<PhotoCameraComponent, PhotoCameraBoundUserInterface> _activeCameras = new();
+    public IReadOnlyDictionary<PhotoCameraComponent, PhotoCameraBoundUserInterface> ActiveCameras => _activeCameras;
 
     public override void Initialize()
     {
@@ -20,7 +21,8 @@ public sealed partial class PhotoSystem : SharedPhotoSystem
     {
         base.Update(frameTime);
 
-        foreach (var (component, window) in ActiveCameras)
+        var activeCamerasSnapshot = new List<KeyValuePair<PhotoCameraComponent, PhotoCameraBoundUserInterface>>(_activeCameras);
+        foreach (var (component, window) in activeCamerasSnapshot)
         {
             window.UpdateControl(component, frameTime);
         }
@@ -28,17 +30,17 @@ public sealed partial class PhotoSystem : SharedPhotoSystem
 
     public void OpenCameraUi(PhotoCameraComponent component, PhotoCameraBoundUserInterface window)
     {
-        if (ActiveCameras.ContainsKey(component))
+        if (_activeCameras.ContainsKey(component))
             return;
 
-        ActiveCameras.Add(component, window);
+        _activeCameras.Add(component, window);
     }
 
     public void CloseCameraUi(PhotoCameraComponent component)
     {
-        if (!ActiveCameras.ContainsKey(component))
+        if (!_activeCameras.ContainsKey(component))
             return;
 
-        ActiveCameras.Remove(component);
+        _activeCameras.Remove(component);
     }
 }

@@ -34,6 +34,14 @@ public sealed partial class QuickDialogSystem
         Action? cancelAction = null)
     {
         var entryType = TypeToEntryType(typeof(T1));
+
+        if (initialValue != null && !TryParseQuickDialog<T1>(entryType, initialValue, out _))
+        {
+            throw new ArgumentException(
+                $"Invalid quick dialog prefill value '{initialValue}' for entry type '{entryType}'.",
+                nameof(initialValue));
+        }
+
         OpenDialogInternal(
             session,
             title,

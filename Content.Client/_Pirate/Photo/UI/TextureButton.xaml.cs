@@ -64,9 +64,9 @@ public sealed partial class TextureButton : ContainerButton
         set => Icon.DisplayRect.SetSize = value;
     }
 
-    public SpriteSpecifier? BaseTexture;
-    public SpriteSpecifier? PointedTexture;
-    public SpriteSpecifier? PressedTexture;
+    public SpriteSpecifier? BaseTexture { get; set; }
+    public SpriteSpecifier? PointedTexture { get; set; }
+    public SpriteSpecifier? PressedTexture { get; set; }
 
     public AudioResource? ClickSound
     {

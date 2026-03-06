@@ -53,11 +53,11 @@ public sealed class PhotoCaptureFilterSystem : EntitySystem
 
     // Legacy wrappers retained for compatibility with existing call sites.
     public IDisposable BeginSuppressStatusIcons(IEye? eye, TimeSpan? timeout = null)
-        => BeginPhotoCaptureSuppression(eye, timeout);
+        => BeginSuppression(eye, PhotoCaptureSuppressionMask.StatusIndicators, timeout);
 
     public IDisposable BeginSuppressStatusIcons()
     {
-        return BeginPhotoCaptureSuppression(null);
+        return BeginSuppression(null, PhotoCaptureSuppressionMask.StatusIndicators);
     }
 
     public bool IsSuppressedForEye(IEye? eye, PhotoCaptureSuppressionMask mask)
@@ -81,7 +81,7 @@ public sealed class PhotoCaptureFilterSystem : EntitySystem
     }
 
     public bool SuppressStatusIconsForPhotoCaptureForEye(IEye? eye)
-        => IsSuppressedForEye(eye, PhotoCaptureSuppressionMask.AllPhotoOverlays);
+        => IsSuppressedForEye(eye, PhotoCaptureSuppressionMask.StatusIndicators);
 
     public override void FrameUpdate(float frameTime)
     {

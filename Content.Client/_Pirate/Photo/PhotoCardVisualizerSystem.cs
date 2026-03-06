@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+using System;
 using System.IO;
 using Content.Shared._Pirate.Photo;
 using Robust.Client.GameObjects;
@@ -32,8 +33,9 @@ public sealed class PhotoCardVisualizerSystem : VisualizerSystem<PhotoCardVisual
             _sprite.LayerSetTexture((uid, args.Sprite), PhotoCardVisualLayers.Preview, texture);
             _sprite.LayerSetVisible((uid, args.Sprite), PhotoCardVisualLayers.Preview, true);
         }
-        catch
+        catch (Exception ex)
         {
+            Log.Error($"Failed to apply photo card preview texture for {ToPrettyString(uid)} on sprite {args.Sprite}: {ex}");
             _sprite.LayerSetVisible((uid, args.Sprite), PhotoCardVisualLayers.Preview, false);
         }
     }

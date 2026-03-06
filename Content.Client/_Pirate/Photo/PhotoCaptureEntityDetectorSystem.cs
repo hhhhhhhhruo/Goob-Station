@@ -10,6 +10,7 @@ using Robust.Client.ComponentTrees;
 using Robust.Shared.Graphics;
 using Robust.Shared.Map;
 using Robust.Shared.Maths;
+using Robust.Shared.Physics;
 using System.Numerics;
 
 namespace Content.Client._Pirate.Photo;
@@ -19,6 +20,9 @@ namespace Content.Client._Pirate.Photo;
 /// </summary>
 public sealed class PhotoCaptureEntityDetectorSystem : EntitySystem
 {
+    private const int MaxEntitiesHardLimit = 64;
+
+    [Dependency] private readonly OccluderSystem _occluderSystem = default!;
     [Dependency] private readonly SpriteTreeSystem _spriteTree = default!;
     private EntityQuery<MobStateComponent> _mobStateQuery = default!;
     private EntityQuery<FadingSpriteComponent> _fadingQuery = default!;
@@ -51,8 +55,10 @@ public sealed class PhotoCaptureEntityDetectorSystem : EntitySystem
         if (!TryGetViewportWorldBounds(viewport, out var worldBounds))
             return new List<NetEntity>();
 
+        var effectiveCapacity = System.Math.Min(maxEntities, MaxEntitiesHardLimit);
         var visibleSprites = _spriteTree.QueryAabb(eye.Position.MapId, worldBounds);
-        var unique = new HashSet<NetEntity>(maxEntities);
+        var unique = new HashSet<NetEntity>(effectiveCapacity);
+        var eyeWorldPosition = eye.Position.Position + eye.Offset;
 
         foreach (var sprite in visibleSprites)
         {
@@ -69,15 +75,37 @@ public sealed class PhotoCaptureEntityDetectorSystem : EntitySystem
             if (_stealthQuery.TryGetComponent(entity, out var stealth) && stealth.Enabled)
                 continue;
 
+            if (IsOccluded(eye.Position.MapId, eyeWorldPosition, sprite.Uid, sprite.Transform.WorldPosition))
+                continue;
+
             if (!EntityManager.TryGetNetEntity(entity, out var net) || net == null)
                 continue;
 
             unique.Add(net.Value);
-            if (unique.Count >= maxEntities)
+            if (unique.Count >= effectiveCapacity)
                 return new List<NetEntity>(unique);
         }
 
         return new List<NetEntity>(unique);
+    }
+
+    private bool IsOccluded(MapId mapId, Vector2 eyeWorldPosition, EntityUid entity, Vector2 targetWorldPosition)
+    {
+        var toTarget = targetWorldPosition - eyeWorldPosition;
+        var distance = toTarget.Length();
+        if (distance <= 0.001f)
+            return false;
+
+        var ray = new Ray(eyeWorldPosition, toTarget / distance);
+        var hits = _occluderSystem.IntersectRayWithPredicate(
+            mapId,
+            ray,
+            distance,
+            entity,
+            static (uid, targetEntity) => uid == targetEntity,
+            returnOnFirstHit: true);
+
+        return hits.Count > 0;
     }
 
     private static bool TryGetViewportWorldBounds(ScalingViewport viewport, out Box2Rotated bounds)

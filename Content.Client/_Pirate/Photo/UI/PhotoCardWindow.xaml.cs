@@ -18,10 +18,6 @@ namespace Content.Client._Pirate.Photo.UI;
 [GenerateTypedNameReferences]
 public sealed partial class PhotoCardWindow : BaseWindow
 {
-    private const int DRAG_MARGIN_SIZE = 16;
-
-    private DragMode _allowedResizeModes = DragMode.None;
-
     public PhotoCardWindow()
     {
         IoCManager.InjectDependencies(this);
@@ -53,33 +49,5 @@ public sealed partial class PhotoCardWindow : BaseWindow
         CaptionLabel.SetMessage(FormattedMessage.FromUnformatted(caption ?? string.Empty));
     }
 
-    protected override DragMode GetDragModeFor(Vector2 relativeMousePos)
-    {
-        var mode = DragMode.None;
-
-        // Be quite generous with resize margins:
-        if (relativeMousePos.Y < DRAG_MARGIN_SIZE)
-        {
-            mode |= DragMode.Top;
-        }
-        else if (relativeMousePos.Y > Size.Y - DRAG_MARGIN_SIZE)
-        {
-            mode |= DragMode.Bottom;
-        }
-
-        if (relativeMousePos.X < DRAG_MARGIN_SIZE)
-        {
-            mode |= DragMode.Left;
-        }
-        else if (relativeMousePos.X > Size.X - DRAG_MARGIN_SIZE)
-        {
-            mode |= DragMode.Right;
-        }
-
-        if ((mode & _allowedResizeModes) == DragMode.None)
-        {
-            return DragMode.Move;
-        }
-        return mode & _allowedResizeModes;
-    }
+    protected override DragMode GetDragModeFor(Vector2 _) => DragMode.Move;
 }

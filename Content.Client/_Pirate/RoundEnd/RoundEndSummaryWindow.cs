@@ -19,10 +19,17 @@ namespace Content.Client.RoundEnd;
 
 public sealed partial class RoundEndSummaryWindow
 {
+    private readonly Dictionary<int, string> _photoDownloadPaths = new();
+    private readonly List<(TextureButton Button, Action<ButtonEventArgs> Handler)> _photoDownloadHandlers = new();
+    private readonly List<TextureRect> _photoTextureRects = new();
+    private int _nextPhotoDownloadId;
+
     private BoxContainer? MakePhotoReportTab()
     {
         var stationAlbumSystem = _entityManager.System<PhotoAlbumSystem>();
         var spriteSystem = _entityManager.System<SpriteSystem>();
+        ReleasePhotoResources();
+        OnClose += ReleasePhotoResources;
 
         var stationAlbumTab = new BoxContainer
         {
@@ -59,7 +66,7 @@ public sealed partial class RoundEndSummaryWindow
 
             foreach (var image in album.Images)
             {
-                MemoryStream stream = new MemoryStream(image.Key);
+                using var stream = new MemoryStream(image.Key);
 
                 var imageLabel = new RichTextLabel();
 
@@ -79,6 +86,7 @@ public sealed partial class RoundEndSummaryWindow
                 {
                     Margin = new Thickness(5, 10, 5, 5)
                 };
+                _photoTextureRects.Add(textureRect);
 
                 TextureButton downloadButton = new TextureButton
                 {
@@ -86,7 +94,24 @@ public sealed partial class RoundEndSummaryWindow
                     VerticalAlignment = VAlignment.Bottom
                 };
 
-                downloadButton.OnPressed += _ => DownloadButton_OnPressed(_, image.Key);
+                var downloadId = _nextPhotoDownloadId++;
+                try
+                {
+                    var tempPath = Path.Combine(
+                        Path.GetTempPath(),
+                        $"ss14-round-end-photo-{RoundId}-{downloadId}-{Guid.NewGuid():N}.png");
+                    File.WriteAllBytes(tempPath, image.Key);
+                    _photoDownloadPaths[downloadId] = tempPath;
+
+                    Action<ButtonEventArgs> onPressed = args => DownloadButton_OnPressed(args, downloadId);
+                    downloadButton.OnPressed += onPressed;
+                    _photoDownloadHandlers.Add((downloadButton, onPressed));
+                }
+                catch (Exception ex)
+                {
+                    downloadButton.Disabled = true;
+                    Log.Warning($"Failed to cache round-end photo {downloadId} for download: {ex}");
+                }
 
                 downloadButton.Scale = new Vector2(0.5f, 0.5f);
                 downloadButton.TextureNormal = spriteSystem.Frame0(downloadIconTexture);
@@ -145,8 +170,53 @@ public sealed partial class RoundEndSummaryWindow
         return stationAlbumTab;
     }
 
-    private async void DownloadButton_OnPressed(ButtonEventArgs _, byte[] data)
+    protected override void Dispose(bool disposing)
     {
+        if (disposing)
+            ReleasePhotoResources();
+
+        base.Dispose(disposing);
+    }
+
+    private void ReleasePhotoResources()
+    {
+        OnClose -= ReleasePhotoResources;
+
+        foreach (var (button, handler) in _photoDownloadHandlers)
+        {
+            button.OnPressed -= handler;
+        }
+        _photoDownloadHandlers.Clear();
+
+        foreach (var textureRect in _photoTextureRects)
+        {
+            textureRect.Texture = null;
+        }
+        _photoTextureRects.Clear();
+
+        foreach (var cachedPath in _photoDownloadPaths.Values)
+        {
+            try
+            {
+                if (File.Exists(cachedPath))
+                    File.Delete(cachedPath);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning($"Failed to delete cached round-end photo file '{cachedPath}': {ex}");
+            }
+        }
+        _photoDownloadPaths.Clear();
+    }
+
+    private async void DownloadButton_OnPressed(ButtonEventArgs _, int imageId)
+    {
+        if (!_photoDownloadPaths.TryGetValue(imageId, out var cachedPath) || !File.Exists(cachedPath))
+        {
+            Log.Warning($"Round-end photo download cache miss for image id {imageId}.");
+            return;
+        }
+
         var file = await _fileDialogManager.SaveFile(new FileDialogFilters(new FileDialogFilters.Group("png")));
 
         if (!file.HasValue)
@@ -154,7 +224,8 @@ public sealed partial class RoundEndSummaryWindow
 
         try
         {
-            await file.Value.fileStream.WriteAsync(data, 0, data.Length);
+            await using var source = File.OpenRead(cachedPath);
+            await source.CopyToAsync(file.Value.fileStream);
         }
         finally
         {

@@ -168,7 +168,7 @@ public sealed class PhotoCameraBoundUserInterface : BoundUserInterface
             if (!EntMan.TryGetComponent<TransformComponent>(cameraEntity, out var transform))
                 return;
 
-            var message = new PhotoCameraTakeImageMessage(bytes, previewBytes, new MapCoordinates(_zoomPos, transform.MapID), _zoomValue, capturedEntities);
+            var message = new PhotoCameraTakeImageMessage(bytes, previewBytes, new MapCoordinates(transform.WorldPosition, transform.MapID), _zoomValue, capturedEntities);
             SendMessage(message);
         });
     }

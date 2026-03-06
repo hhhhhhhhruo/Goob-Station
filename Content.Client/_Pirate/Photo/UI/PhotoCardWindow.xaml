@@ -1,19 +1,15 @@
 <photo:PhotoCardWindow xmlns="https://spacestation14.io"
     xmlns:photo="clr-namespace:Content.Client._Pirate.Photo.UI"
-    xmlns:gfx="clr-namespace:Robust.Client.Graphics;assembly=Robust.Client"
     MouseFilter="Stop" Resizable="False" MinSize="150 150"
     SetSize="430 592">
 
     <BoxContainer Name="ContentsRoot" Orientation="Vertical">
         <PanelContainer Name="PaperBackground" StyleClasses="PhotoDefaultBorder" VerticalExpand="True" HorizontalExpand="True">
             <BoxContainer Orientation="Vertical" VerticalExpand="True" HorizontalExpand="True" SeparationOverride="0">
-                <PanelContainer Margin="4 4 4 8" VerticalExpand="True" HorizontalExpand="True">
-                    <PanelContainer.PanelOverride>
-                        <gfx:StyleBoxFlat BackgroundColor="#FFFFFF" BorderColor="#C0C0C0" BorderThickness="4"/>
-                    </PanelContainer.PanelOverride>
+                <PanelContainer Margin="4 4 4 8" StyleClasses="PhotoCardFramePanel" VerticalExpand="True" HorizontalExpand="True">
                     <BoxContainer Orientation="Vertical" VerticalExpand="True" HorizontalExpand="True" SeparationOverride="0">
                         <BoxContainer Orientation="Horizontal" HorizontalExpand="True" MinHeight="22" Margin="4 4 4 2">
-                            <Label Name="PhotoNameLabel" HorizontalExpand="True" VerticalAlignment="Center" ClipText="True" FontColorOverride="#111111"/>
+                            <Label Name="PhotoNameLabel" StyleClasses="PhotoCardPrimaryText" HorizontalExpand="True" VerticalAlignment="Center" ClipText="True"/>
                             <PanelContainer StyleClasses="AngleRect" VerticalAlignment="Top" HorizontalAlignment="Right">
                                 <TextureButton Name="CloseButton" StyleClasses="windowCloseButton"/>
                             </PanelContainer>

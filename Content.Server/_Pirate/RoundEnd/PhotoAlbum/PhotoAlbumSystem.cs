@@ -13,6 +13,7 @@ using Content.Shared.Verbs;
 using Robust.Server.Audio;
 using Robust.Server.Containers;
 using Robust.Server.Player;
+using Robust.Shared.Containers;
 
 namespace Content.Server._Pirate.RoundEnd.PhotoAlbum;
 public sealed class PhotoAlbumSystem : EntitySystem
@@ -23,40 +24,90 @@ public sealed class PhotoAlbumSystem : EntitySystem
     [Dependency] private readonly AudioSystem _audio = default!;
     [Dependency] private readonly TagSystem _tags = default!;
     [Dependency] private readonly MetaDataSystem _metaData = default!;
+    private readonly HashSet<EntityUid> _unsignedAutoSignAlbums = new();
 
     public override void Initialize()
     {
         SubscribeLocalEvent<RoundEndTextAppendEvent>(OnRoundEndTextAppend);
         SubscribeLocalEvent<PlayerSpawnCompleteEvent>(OnPlayerSpawnComplete);
 
+        SubscribeLocalEvent<AutoSignPhotoAlbumComponent, ComponentStartup>(OnAutoSignStartup);
+        SubscribeLocalEvent<AutoSignPhotoAlbumComponent, ComponentShutdown>(OnAutoSignShutdown);
+
         SubscribeLocalEvent<PhotoAlbumComponent, GetVerbsEvent<Verb>>(OnGetVerbs);
         SubscribeLocalEvent<PhotoAlbumComponent, ExaminedEvent>(OnExamine);
         SubscribeLocalEvent<PhotoAlbumComponent, ComponentStartup>(OnPhotoAlbumStartup);
+        SubscribeLocalEvent<PhotoAlbumComponent, ComponentShutdown>(OnPhotoAlbumShutdown);
+        SubscribeLocalEvent<PhotoAlbumComponent, EntInsertedIntoContainerMessage>(OnPhotoAlbumInserted);
+        SubscribeLocalEvent<PhotoAlbumComponent, EntRemovedFromContainerMessage>(OnPhotoAlbumRemoved);
     }
 
     private void OnPhotoAlbumStartup(Entity<PhotoAlbumComponent> entity, ref ComponentStartup args)
     {
-        if (!entity.Comp.IsSigned)
-            return;
+        RefreshUnsignedAutoSignTracking(entity.Owner);
 
-        UpdateSignedAlbumName(entity);
+        if (entity.Comp.IsSigned)
+            UpdateSignedAlbumName(entity);
+    }
+
+    private void OnPhotoAlbumShutdown(Entity<PhotoAlbumComponent> entity, ref ComponentShutdown args)
+    {
+        _unsignedAutoSignAlbums.Remove(entity.Owner);
+    }
+
+    private void OnAutoSignStartup(EntityUid uid, AutoSignPhotoAlbumComponent component, ref ComponentStartup args)
+    {
+        RefreshUnsignedAutoSignTracking(uid);
+    }
+
+    private void OnAutoSignShutdown(EntityUid uid, AutoSignPhotoAlbumComponent component, ref ComponentShutdown args)
+    {
+        _unsignedAutoSignAlbums.Remove(uid);
+    }
+
+    private void OnPhotoAlbumInserted(EntityUid uid, PhotoAlbumComponent component, EntInsertedIntoContainerMessage args)
+    {
+        RefreshUnsignedAutoSignTracking(uid, component);
+    }
+
+    private void OnPhotoAlbumRemoved(EntityUid uid, PhotoAlbumComponent component, EntRemovedFromContainerMessage args)
+    {
+        RefreshUnsignedAutoSignTracking(uid, component);
+    }
+
+    private void RefreshUnsignedAutoSignTracking(EntityUid uid, PhotoAlbumComponent? photoAlbum = null)
+    {
+        if (!Resolve(uid, ref photoAlbum, false) ||
+            photoAlbum.IsSigned ||
+            !HasComp<AutoSignPhotoAlbumComponent>(uid))
+        {
+            _unsignedAutoSignAlbums.Remove(uid);
+            return;
+        }
+
+        _unsignedAutoSignAlbums.Add(uid);
     }
 
     private void OnPlayerSpawnComplete(PlayerSpawnCompleteEvent ev)
     {
-        var query = EntityQueryEnumerator<PhotoAlbumComponent, AutoSignPhotoAlbumComponent>();
+        if (_unsignedAutoSignAlbums.Count == 0)
+            return;
 
-        while (query.MoveNext(out var uid, out var photoAlbum, out _))
+        var snapshot = new List<EntityUid>(_unsignedAutoSignAlbums);
+        foreach (var uid in snapshot)
         {
-            if (photoAlbum.IsSigned || !IsOwnedBy(uid, ev.Mob))
+            if (!TryComp<PhotoAlbumComponent>(uid, out var photoAlbum) ||
+                !HasComp<AutoSignPhotoAlbumComponent>(uid) ||
+                photoAlbum.IsSigned)
+            {
+                _unsignedAutoSignAlbums.Remove(uid);
+                continue;
+            }
+
+            if (!IsOwnedBy(uid, ev.Mob))
                 continue;
 
-            photoAlbum.IsSigned = true;
-            photoAlbum.SignerUid = ev.Mob;
-            photoAlbum.SignerUsername = ev.Player.Data.UserName;
-            photoAlbum.SignerName = MetaData(ev.Mob).EntityName;
-            photoAlbum.UsePossessiveSignerName = true;
-            UpdateSignedAlbumName((uid, photoAlbum));
+            SignPhotoAlbum((uid, photoAlbum), ev.Mob, ev.Player.Data.UserName, usePossessiveSignerName: true);
         }
     }
 
@@ -106,19 +157,26 @@ public sealed class PhotoAlbumSystem : EntitySystem
 
     private void VerbSignPhotoAlbum(Entity<PhotoAlbumComponent> entity, EntityUid user)
     {
-        entity.Comp.IsSigned = true;
-
-        entity.Comp.SignerUid = user;
-        entity.Comp.SignerName = MetaData(user).EntityName;
-        entity.Comp.UsePossessiveSignerName = true;
-
+        string? username = null;
         if (_player.TryGetSessionByEntity(user, out var session))
-            entity.Comp.SignerUsername = session.Data.UserName;
+            username = session.Data.UserName;
 
-        UpdateSignedAlbumName(entity);
+        SignPhotoAlbum(entity, user, username, usePossessiveSignerName: true);
 
         _popup.PopupEntity(Loc.GetString("photoalbum-signed", ("user", user)), entity);
         _audio.PlayPvs(entity.Comp.SignSound, entity);
+    }
+
+    private void SignPhotoAlbum(Entity<PhotoAlbumComponent> entity, EntityUid signer, string? signerUsername, bool usePossessiveSignerName)
+    {
+        entity.Comp.IsSigned = true;
+        entity.Comp.SignerUid = signer;
+        entity.Comp.SignerUsername = signerUsername;
+        entity.Comp.SignerName = MetaData(signer).EntityName;
+        entity.Comp.UsePossessiveSignerName = usePossessiveSignerName;
+
+        _unsignedAutoSignAlbums.Remove(entity.Owner);
+        UpdateSignedAlbumName(entity);
     }
 
     private void UpdateSignedAlbumName(Entity<PhotoAlbumComponent> entity)
