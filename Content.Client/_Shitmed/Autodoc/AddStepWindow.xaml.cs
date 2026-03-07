@@ -65,7 +65,7 @@ public sealed partial class AddStepWindow : FancyWindow
             var field = "name";
             var prompt = Loc.GetString("autodoc-add-step-grab-item-prompt");
             var placeholder = Loc.GetString("autodoc-add-step-grab-item-placeholder");
-            var entry = new QuickDialogEntry(field, QuickDialogEntryType.ShortText, prompt, placeholder: placeholder);
+            var entry = new QuickDialogEntry(field, QuickDialogEntryType.ShortText, prompt, placeholder);
             var entries = new List<QuickDialogEntry> { entry };
             _grab = new DialogWindow(GrabItemButton.Text!, entries);
             _grab.OnConfirmed += responses =>

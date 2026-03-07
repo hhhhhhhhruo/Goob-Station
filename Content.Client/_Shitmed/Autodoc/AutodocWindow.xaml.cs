@@ -89,7 +89,7 @@ public sealed partial class AutodocWindow : FancyWindow
             var field = "title";
             var prompt = Loc.GetString("autodoc-program-title");
             var placeholder = Loc.GetString("autodoc-program-title-placeholder", ("number", comp.Programs.Count + 1));
-            var entry = new QuickDialogEntry(field, QuickDialogEntryType.ShortText, prompt, placeholder: placeholder);
+            var entry = new QuickDialogEntry(field, QuickDialogEntryType.ShortText, prompt, placeholder);
             var entries = new List<QuickDialogEntry> { entry };
             _dialog = new DialogWindow(CreateProgramButton.Text!, entries);
             _dialog.OnConfirmed += responses =>

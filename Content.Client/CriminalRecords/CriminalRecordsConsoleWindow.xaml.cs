@@ -377,7 +377,7 @@ public sealed partial class CriminalRecordsConsoleWindow : FancyWindow
         var placeholders = _proto.Index(ReasonPlaceholders);
         var placeholder = Loc.GetString("criminal-records-console-reason-placeholder", ("placeholder", _random.Pick(placeholders))); // just funny it doesn't actually get used
         var prompt = Loc.GetString("criminal-records-console-reason");
-        var entry = new QuickDialogEntry(field, QuickDialogEntryType.LongText, prompt, placeholder: placeholder);
+        var entry = new QuickDialogEntry(field, QuickDialogEntryType.LongText, prompt, placeholder);
         var entries = new List<QuickDialogEntry>() { entry };
         _reasonDialog = new DialogWindow(title, entries);
 

@@ -213,7 +213,7 @@ public static class ReagentDispenserRecipeUiHelper
             field,
             QuickDialogEntryType.ShortText,
             Loc.GetString("reagent-dispenser-window-recipes-save-dialog-prompt"),
-            placeholder: Loc.GetString("reagent-dispenser-window-recipes-save-dialog-placeholder"));
+            Loc.GetString("reagent-dispenser-window-recipes-save-dialog-placeholder"));
 
         var dialog = new DialogWindow(
             Loc.GetString("reagent-dispenser-window-recipes-save-dialog-title"),

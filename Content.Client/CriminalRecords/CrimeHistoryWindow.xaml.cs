@@ -49,7 +49,7 @@ public sealed partial class CrimeHistoryWindow : FancyWindow
             var field = "line";
             var prompt = Loc.GetString("criminal-records-console-reason");
             var placeholder = Loc.GetString("criminal-records-history-placeholder");
-            var entry = new QuickDialogEntry(field, QuickDialogEntryType.LongText, prompt, placeholder: placeholder);
+            var entry = new QuickDialogEntry(field, QuickDialogEntryType.LongText, prompt, placeholder);
             var entries = new List<QuickDialogEntry> { entry };
             _dialog = new DialogWindow(Title!, entries);
 
