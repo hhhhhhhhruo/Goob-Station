@@ -759,6 +759,7 @@ namespace Content.Client.Stylesheets
             };
             paperBackground.SetPatchMargin(StyleBox.Margin.All, 16.0f);
 
+            #region Pirate: camera
             var photoDefaultBorder = new StyleBoxFlat
             {
                 BackgroundColor = Color.FromHex("#eaedde"),
@@ -766,13 +767,13 @@ namespace Content.Client.Stylesheets
                 BorderThickness = new Thickness(4),
             };
             photoDefaultBorder.SetContentMarginOverride(StyleBox.Margin.All, 4);
-
             var photoCardFramePanel = new StyleBoxFlat
             {
                 BackgroundColor = Color.FromHex("#FFFFFF"),
                 BorderColor = Color.FromHex("#C0C0C0"),
                 BorderThickness = new Thickness(4),
             };
+            #endregion
 
             var contextMenuExpansionTexture = resCache.GetTexture("/Textures/Interface/VerbIcons/group.svg.192dpi.png");
             var verbMenuConfirmationTexture = resCache.GetTexture("/Textures/Interface/VerbIcons/group.svg.192dpi.png");
@@ -1814,14 +1815,14 @@ namespace Content.Client.Stylesheets
                 Element<PanelContainer>().Class("PaperDefaultBorder")
                     .Prop(PanelContainer.StylePropertyPanel, paperBackground),
                 Element<PanelContainer>().Class("PhotoDefaultBorder")
-                    .Prop(PanelContainer.StylePropertyPanel, photoDefaultBorder),
+                    .Prop(PanelContainer.StylePropertyPanel, photoDefaultBorder), // Pirate: camera
                 Element<RichTextLabel>().Class("PaperWrittenText")
                     .Prop(Label.StylePropertyFont, notoSans12)
                     .Prop(Control.StylePropertyModulateSelf, Color.FromHex("#111111")),
                 Element<PanelContainer>().Class("PhotoCardFramePanel")
-                    .Prop(PanelContainer.StylePropertyPanel, photoCardFramePanel),
+                    .Prop(PanelContainer.StylePropertyPanel, photoCardFramePanel), // Pirate: camera
                 Element<Label>().Class("PhotoCardPrimaryText")
-                    .Prop(Label.StylePropertyFontColor, Color.FromHex("#111111")),
+                    .Prop(Label.StylePropertyFontColor, Color.FromHex("#111111")), // Pirate: camera
 
                 Element<RichTextLabel>().Class("LabelSubText")
                     .Prop(Label.StylePropertyFont, notoSans10)

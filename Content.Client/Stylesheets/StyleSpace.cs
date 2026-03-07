@@ -82,6 +82,7 @@ namespace Content.Client.Stylesheets
             tabContainerBoxActive.SetContentMarginOverride(StyleBox.Margin.Horizontal, 5);
             var tabContainerBoxInactive = new StyleBoxFlat {BackgroundColor = new Color(32, 32, 32)};
             tabContainerBoxInactive.SetContentMarginOverride(StyleBox.Margin.Horizontal, 5);
+            #region Pirate: camera
             var photoDefaultBorder = new StyleBoxFlat
             {
                 BackgroundColor = Color.FromHex("#eaedde"),
@@ -95,6 +96,7 @@ namespace Content.Client.Stylesheets
                 BorderColor = Color.FromHex("#C0C0C0"),
                 BorderThickness = new Thickness(4),
             };
+            #endregion
 
             Stylesheet = new Stylesheet(BaseRules.Concat(new StyleRule[]
             {
@@ -106,11 +108,11 @@ namespace Content.Client.Stylesheets
                     .Prop(Label.StylePropertyFont, notoSans10)
                     .Prop(Label.StylePropertyFontColor, Color.DarkGray),
                 Element<PanelContainer>().Class("PhotoDefaultBorder")
-                    .Prop(PanelContainer.StylePropertyPanel, photoDefaultBorder),
+                    .Prop(PanelContainer.StylePropertyPanel, photoDefaultBorder), // Pirate: camera
                 Element<PanelContainer>().Class("PhotoCardFramePanel")
-                    .Prop(PanelContainer.StylePropertyPanel, photoCardFramePanel),
+                    .Prop(PanelContainer.StylePropertyPanel, photoCardFramePanel), // Pirate: camera
                 Element<Label>().Class("PhotoCardPrimaryText")
-                    .Prop(Label.StylePropertyFontColor, Color.FromHex("#111111")),
+                    .Prop(Label.StylePropertyFontColor, Color.FromHex("#111111")), // Pirate: camera
 
                 Element<PanelContainer>().Class(ClassHighDivider)
                     .Prop(PanelContainer.StylePropertyPanel, new StyleBoxFlat

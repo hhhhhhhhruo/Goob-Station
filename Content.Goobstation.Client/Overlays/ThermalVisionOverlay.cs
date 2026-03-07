@@ -19,6 +19,7 @@ using Robust.Shared.Enums;
 using Robust.Shared.Map;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Timing;
+using Content.Client._Pirate.Photo; // Pirate: camera
 
 namespace Content.Goobstation.Client.Overlays;
 
@@ -33,7 +34,7 @@ public sealed class ThermalVisionOverlay : Overlay
     private readonly SpriteSystem _sprite;
     private readonly ContainerSystem _container;
     private readonly SharedPointLightSystem _light;
-    private readonly PhotoCaptureFilterSystem _photoCaptureFilter; // # Pirate: camera
+    private readonly PhotoCaptureFilterSystem _photoCaptureFilter; // Pirate: camera
 
     public override bool RequestScreenTexture => true;
     public override OverlaySpace Space => OverlaySpace.WorldSpace;
@@ -54,16 +55,16 @@ public sealed class ThermalVisionOverlay : Overlay
         _transform = _entity.System<TransformSystem>();
         _sprite = _entity.System<SpriteSystem>();
         _light = _entity.System<SharedPointLightSystem>();
-        _photoCaptureFilter = _entity.System<PhotoCaptureFilterSystem>(); // # Pirate: camera
+        _photoCaptureFilter = _entity.System<PhotoCaptureFilterSystem>(); // Pirate: camera
 
         ZIndex = -1;
     }
 
     protected override void Draw(in OverlayDrawArgs args)
     {
-        if (_photoCaptureFilter.IsSuppressedForEye(args.Viewport.Eye, PhotoCaptureSuppressionMask.VisionEffects)) // # Pirate: camera
+        if (_photoCaptureFilter.IsSuppressedForEye(args.Viewport.Eye, PhotoCaptureSuppressionMask.VisionEffects)) // Pirate: camera
         {
-            ResetLight(false); // # Pirate: camera
+            ResetLight(false); // Pirate: camera
             return;
         }
 

@@ -49,14 +49,16 @@ public static class FaxConstants
     public const string FaxPaperStampedByData = "fax_data_stamped_by";
     public const string FaxSyndicateData = "fax_data_i_am_syndicate";
     public const string FaxPaperLockedData = "fax_data_locked";
+
+    // Goobstation
+    public const string FaxEntitySentData = "fax_data_entity_sent";
+    public const string FaxWorkCrossGridData = "fax_data_work_crossgrid"; // used for sending entities
+    #region Pirate: camera
     public const string FaxPhotoImageData = "fax_data_photo_image";
     public const string FaxPhotoPreviewData = "fax_data_photo_preview";
     public const string FaxPhotoCustomNameData = "fax_data_photo_custom_name";
     public const string FaxPhotoCustomDescriptionData = "fax_data_photo_custom_description";
     public const string FaxPhotoCaptionData = "fax_data_photo_caption";
     public const string FaxPhotoEntityDescriptionData = "fax_data_photo_entity_description";
-
-    // Goobstation
-    public const string FaxEntitySentData = "fax_data_entity_sent";
-    public const string FaxWorkCrossGridData = "fax_data_work_crossgrid"; // used for sending entities
+    #endregion
 }

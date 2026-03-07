@@ -6,15 +6,15 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 using Content.Client.GameTicking.Managers;
-using Content.Client._Pirate.RoundEnd.PhotoAlbum;
 using Content.Shared.GameTicking;
 using Content.Shared.Input;
 using JetBrains.Annotations;
 using Robust.Client.Input;
-using Robust.Client.UserInterface;
 using Robust.Client.UserInterface.Controllers;
 using Robust.Shared.Input.Binding;
 using Robust.Shared.Player;
+using Content.Client._Pirate.RoundEnd.PhotoAlbum; // Pirate: camera
+using Robust.Client.UserInterface; // Pirate: camera
 
 namespace Content.Client.RoundEnd;
 
@@ -24,11 +24,11 @@ public sealed class RoundEndSummaryUIController : UIController,
     IOnSystemChanged<PhotoAlbumSystem>
 {
     [Dependency] private readonly IInputManager _input = default!;
-    [Dependency] private readonly IFileDialogManager _fileDialogManager = default!; // # Pirate: camera
-    [Dependency] private readonly IUserInterfaceManager _uiManager = default!;
+    [Dependency] private readonly IFileDialogManager _fileDialogManager = default!; // Pirate: camera
+    [Dependency] private readonly IUserInterfaceManager _uiManager = default!; // Pirate: camera
 
     private RoundEndSummaryWindow? _window;
-    private PhotoAlbumSystem? _photoAlbum;
+    private PhotoAlbumSystem? _photoAlbum; // Pirate: camera
 
     private void ToggleScoreboardWindow(ICommonSession? session = null)
     {
@@ -53,7 +53,7 @@ public sealed class RoundEndSummaryUIController : UIController,
             return;
 
         _window = new RoundEndSummaryWindow(message.GamemodeTitle, message.RoundEndText,
-            message.RoundDuration, message.RoundId, message.AllPlayersEndInfo, EntityManager, _fileDialogManager); // # Pirate: camera
+            message.RoundDuration, message.RoundId, message.AllPlayersEndInfo, EntityManager, _fileDialogManager); // Pirate: camera
     }
 
     public void OnSystemLoaded(ClientGameTicker system)
@@ -62,6 +62,7 @@ public sealed class RoundEndSummaryUIController : UIController,
             InputCmdHandler.FromDelegate(ToggleScoreboardWindow));
     }
 
+    #region Pirate: camera
     public void OnSystemLoaded(PhotoAlbumSystem system)
     {
         _photoAlbum = system;
@@ -85,4 +86,5 @@ public sealed class RoundEndSummaryUIController : UIController,
                 _window.AddOrUpdatePhotoReportTab();
         });
     }
+    #endregion
 }

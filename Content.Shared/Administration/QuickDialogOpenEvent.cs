@@ -100,6 +100,7 @@ public sealed class QuickDialogEntry
     /// </summary>
     public string? Placeholder;
 
+    #region Pirate: camera
     /// <summary>
     /// Initial text shown in the input when the dialog opens.
     /// </summary>
@@ -116,6 +117,7 @@ public sealed class QuickDialogEntry
         Placeholder = placeholder;
         Value = value;
     }
+    #endregion
 }
 
 /// <summary>

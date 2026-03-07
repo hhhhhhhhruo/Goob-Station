@@ -7,7 +7,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 using System.Numerics;
-using Content.Client._Pirate.Photo;
+using Content.Client._Pirate.Photo; // Pirate: camera
 using Content.Goobstation.Shared.Overlays;
 using Robust.Client.Graphics;
 using Robust.Shared.Enums;
@@ -18,13 +18,13 @@ namespace Content.Goobstation.Client.Overlays;
 public sealed class BaseSwitchableOverlay<TComp> : Overlay where TComp : SwitchableVisionOverlayComponent
 {
     [Dependency] private readonly IPrototypeManager _prototype = default!;
-    [Dependency] private readonly IEntityManager _entityManager = default!; // # Pirate: camera
+    [Dependency] private readonly IEntityManager _entityManager = default!; // Pirate: camera
 
     public override bool RequestScreenTexture => true;
     public override OverlaySpace Space => OverlaySpace.WorldSpace;
 
     private readonly ShaderInstance _shader;
-    private readonly PhotoCaptureFilterSystem _photoCaptureFilter; // # Pirate: camera
+    private readonly PhotoCaptureFilterSystem _photoCaptureFilter; // Pirate: camera
 
     public TComp? Comp = null;
 
@@ -33,13 +33,13 @@ public sealed class BaseSwitchableOverlay<TComp> : Overlay where TComp : Switcha
     public BaseSwitchableOverlay()
     {
         IoCManager.InjectDependencies(this);
-        _photoCaptureFilter = _entityManager.System<PhotoCaptureFilterSystem>(); // # Pirate: camera
+        _photoCaptureFilter = _entityManager.System<PhotoCaptureFilterSystem>(); // Pirate: camera
         _shader = _prototype.Index<ShaderPrototype>("NightVision").InstanceUnique();
     }
 
     protected override void Draw(in OverlayDrawArgs args)
     {
-        if (_photoCaptureFilter.IsSuppressedForEye(args.Viewport.Eye, PhotoCaptureSuppressionMask.VisionEffects)) // # Pirate: camera
+        if (_photoCaptureFilter.IsSuppressedForEye(args.Viewport.Eye, PhotoCaptureSuppressionMask.VisionEffects)) // Pirate: camera
             return;
 
         if (ScreenTexture is null || Comp is null || !IsActive)

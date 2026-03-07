@@ -51,7 +51,6 @@ using System.Linq;
 using System.Numerics;
 using Content.Client.Message;
 using Content.Shared.GameTicking;
-using Robust.Client.UserInterface;
 using Robust.Client.UserInterface.Controls;
 using Robust.Client.UserInterface.CustomControls;
 using Robust.Shared.Utility;
@@ -59,23 +58,24 @@ using static Robust.Client.UserInterface.Controls.BoxContainer;
 // Goob Station - End of Round Screen
 using Content.Client.Stylesheets;
 using Content.Shared.Mobs;
+using Robust.Client.UserInterface; // Pirate: camera
 
 namespace Content.Client.RoundEnd
 {
-    public sealed partial class RoundEndSummaryWindow : DefaultWindow // # Pirate: camera
+    public sealed partial class RoundEndSummaryWindow : DefaultWindow // Pirate: camera
     {
-        private readonly IFileDialogManager _fileDialogManager; // # Pirate: camera
+        private readonly IFileDialogManager _fileDialogManager; // Pirate: camera
         private readonly IEntityManager _entityManager;
         private readonly TabContainer _roundEndTabs;
         public int RoundId;
 
         public RoundEndSummaryWindow(string gm, string roundEnd, TimeSpan roundTimeSpan, int roundId,
-            RoundEndMessageEvent.RoundEndPlayerInfo[] info, IEntityManager entityManager, IFileDialogManager fileDialogManager) // # Pirate: camera
+            RoundEndMessageEvent.RoundEndPlayerInfo[] info, IEntityManager entityManager, IFileDialogManager fileDialogManager) // Pirate: camera
         {
             _entityManager = entityManager;
-            _fileDialogManager = fileDialogManager; // # Pirate: camera
+            _fileDialogManager = fileDialogManager; // Pirate: camera
 
-            MinSize = new Vector2(610, 580); // # Pirate: camera
+            MinSize = new Vector2(610, 580); // Pirate: camera
 
             Title = Loc.GetString("round-end-summary-window-title");
 
@@ -86,11 +86,11 @@ namespace Content.Client.RoundEnd
             // Also good for serious info.
 
             RoundId = roundId;
-            _roundEndTabs = new TabContainer();
-            _roundEndTabs.AddChild(MakeRoundEndSummaryTab(gm, roundEnd, roundTimeSpan, roundId));
-            _roundEndTabs.AddChild(MakePlayerManifestTab(info));
+            _roundEndTabs = new TabContainer(); // Pirate: camera
+            _roundEndTabs.AddChild(MakeRoundEndSummaryTab(gm, roundEnd, roundTimeSpan, roundId)); // Pirate: camera
+            _roundEndTabs.AddChild(MakePlayerManifestTab(info)); // Pirate: camera
             _roundEndTabs.AddChild(MakeStationReportTab()); //goob
-            AddOrUpdatePhotoReportTab(); // # Pirate: camera
+            AddOrUpdatePhotoReportTab(); // Pirate: camera
 
             Contents.AddChild(_roundEndTabs);
 

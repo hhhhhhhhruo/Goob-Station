@@ -111,7 +111,6 @@
 
 using Content.Goobstation.Common.Administration.Notifications; // Goobstation - Admin Notifications
 using Content.Goobstation.Shared.Fax; // Goobstation
-using Content.Server._Pirate.Photo;
 using Content.Server.Administration;
 using Content.Server.Administration.Managers;
 using Content.Server.Chat.Managers;
@@ -136,7 +135,6 @@ using Content.Shared.Labels.EntitySystems;
 using Content.Shared.Mobs.Components;
 using Content.Shared.NameModifier.Components;
 using Content.Shared.Paper;
-using Content.Shared._Pirate.Photo;
 using Content.Shared.Power;
 using Content.Shared.Tools;
 using Content.Shared.UserInterface;
@@ -146,6 +144,8 @@ using Robust.Shared.Audio.Systems;
 using Robust.Shared.Containers;
 using Robust.Shared.Player;
 using Robust.Shared.Prototypes;
+using Content.Shared._Pirate.Photo; // Pirate: camera
+using Content.Server._Pirate.Photo; // Pirate: camera
 
 namespace Content.Server.Fax;
 
@@ -415,15 +415,16 @@ public sealed class FaxSystem : EntitySystem
 
                     break;
                 case FaxConstants.FaxPrintCommand:
-                    if (!args.Data.TryGetValue(FaxConstants.FaxPaperNameData, out string? name))
+                    if (!args.Data.TryGetValue(FaxConstants.FaxPaperNameData, out string? name)) // Pirate: camera
                         return;
 
-                    args.Data.TryGetValue(FaxConstants.FaxPaperContentData, out string? content);
+                    args.Data.TryGetValue(FaxConstants.FaxPaperContentData, out string? content); // Pirate: camera
                     args.Data.TryGetValue(FaxConstants.FaxPaperLabelData, out string? label);
                     args.Data.TryGetValue(FaxConstants.FaxPaperStampStateData, out string? stampState);
                     args.Data.TryGetValue(FaxConstants.FaxPaperStampedByData, out List<StampDisplayInfo>? stampedBy);
                     args.Data.TryGetValue(FaxConstants.FaxPaperPrototypeData, out string? prototypeId);
                     args.Data.TryGetValue(FaxConstants.FaxPaperLockedData, out bool? locked);
+                    #region Pirate: camera
                     args.Data.TryGetValue(FaxConstants.FaxPhotoImageData, out byte[]? photoImageData);
                     args.Data.TryGetValue(FaxConstants.FaxPhotoPreviewData, out byte[]? photoPreviewData);
                     args.Data.TryGetValue(FaxConstants.FaxPhotoCustomNameData, out string? photoCustomName);
@@ -448,6 +449,8 @@ public sealed class FaxSystem : EntitySystem
                         photoCustomDescription: photoCustomDescription,
                         photoCaption: photoCaption,
                         photoEntityDescription: photoEntityDescription);
+                    #endregion
+
                     Receive(uid, printout, args.SenderAddress);
 
                     break;
@@ -477,7 +480,7 @@ public sealed class FaxSystem : EntitySystem
 
     private void OnFileButtonPressed(EntityUid uid, FaxMachineComponent component, FaxFileMessage args)
     {
-        if (TryComp<PhotoCardComponent>(component.PaperSlot.Item, out _))
+        if (TryComp<PhotoCardComponent>(component.PaperSlot.Item, out _)) // Pirate: camera
             return;
 
         args.Label = args.Label?[..Math.Min(args.Label.Length, FaxFileMessageValidation.MaxLabelSize)];
@@ -557,8 +560,8 @@ public sealed class FaxSystem : EntitySystem
         var canCopy = isPaperInserted &&
                       component.SendTimeoutRemaining <= 0 &&
                       component.InsertingTimeRemaining <= 0;
-        var canPrintFile = !TryComp<PhotoCardComponent>(component.PaperSlot.Item, out _);
-        var state = new FaxUiState(component.FaxName, component.KnownFaxes, canSend, canCopy, canPrintFile, isPaperInserted, component.DestinationFaxAddress);
+        var canPrintFile = !TryComp<PhotoCardComponent>(component.PaperSlot.Item, out _); // Pirate: camera
+        var state = new FaxUiState(component.FaxName, component.KnownFaxes, canSend, canCopy, canPrintFle, isPaperInserted, component.DestinationFaxAddress); // Pirate: camera
         _userInterface.SetUiState(uid, FaxUiKey.Key, state);
     }
 
@@ -604,7 +607,7 @@ public sealed class FaxSystem : EntitySystem
     /// </summary>
     public void PrintFile(EntityUid uid, FaxMachineComponent component, FaxFileMessage args)
     {
-        if (TryComp<PhotoCardComponent>(component.PaperSlot.Item, out _))
+        if (TryComp<PhotoCardComponent>(component.PaperSlot.Item, out _)) // Pirate: camera
             return;
 
         var prototype = args.OfficePaper ? component.PrintOfficePaperId : component.PrintPaperId;
@@ -642,12 +645,13 @@ public sealed class FaxSystem : EntitySystem
         if (sendEntity == null)
             return;
 
-        if (!TryComp(sendEntity, out MetaDataComponent? metadata))
+        if (!TryComp(sendEntity, out MetaDataComponent? metadata)) // Pirate: camera
             return;
 
         TryComp<LabelComponent>(sendEntity, out var labelComponent);
         TryComp<NameModifierComponent>(sendEntity, out var nameMod);
 
+        #region Pirate: camera
         FaxPrintout? printout = null; // # Pirate: camera
         string logContent;
 
@@ -682,6 +686,7 @@ public sealed class FaxSystem : EntitySystem
         {
             return;
         }
+        #endregion
 
         component.PrintingQueue.Enqueue(printout);
         component.SendTimeoutRemaining += component.SendTimeout;
@@ -723,7 +728,7 @@ public sealed class FaxSystem : EntitySystem
         if (!component.KnownFaxes.TryGetValue(component.DestinationFaxAddress, out var faxName))
             return;
 
-        if (!TryComp(sendEntity, out MetaDataComponent? metadata))
+        if (!TryComp(sendEntity, out MetaDataComponent? metadata)) // Pirate: camera
             return;
 
         TryComp<NameModifierComponent>(sendEntity, out var nameMod);
@@ -802,7 +807,7 @@ public sealed class FaxSystem : EntitySystem
             $"{ToPrettyString(args.Actor):actor} " +
             $"sent fax from \"{component.FaxName}\" {ToPrettyString(uid):tool} " +
             $"to \"{faxName}\" ({component.DestinationFaxAddress}) " +
-            $"of {ToPrettyString(sendEntity):subject}: {logContent}");
+            $"of {ToPrettyString(sendEntity):subject}: {logContent}"); // Pirate: camera
 
         component.SendTimeoutRemaining += component.SendTimeout;
 
