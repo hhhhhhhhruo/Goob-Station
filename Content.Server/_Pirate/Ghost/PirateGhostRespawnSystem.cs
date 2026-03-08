@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Content.Server.GameTicking;
 using Content.Shared._Pirate.Ghost;
 using Content.Shared.Bed.Cryostorage;
@@ -126,9 +127,16 @@ public sealed class PirateGhostRespawnSystem : EntitySystem
         return new PirateGhostRespawnAvailability(status.CanRespawn, status.RemainingTime);
     }
 
-    private bool TryGetState(NetUserId userId, out GhostRespawnState? state)
+    private bool TryGetState(NetUserId userId, [NotNullWhen(true)] out GhostRespawnState? state)
     {
-        return _states.TryGetValue(userId, out state);
+        if (_states.TryGetValue(userId, out var found))
+        {
+            state = found;
+            return true;
+        }
+
+        state = null;
+        return false;
     }
 
     private void ArmTimerIfNeeded(NetUserId userId)
