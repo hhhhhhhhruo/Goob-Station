@@ -61,7 +61,7 @@ public sealed class PirateGhostRespawnSystem : EntitySystem
         if (args.Mind.Comp.UserId is not { } userId)
             return;
 
-        if (!TryGetState(userId, out var state) || state == null || !state.HasCrewCycle || state.TimerArmed)
+        if (!TryGetState(userId, out var state) || !state.HasCrewCycle || state.TimerArmed)
             return;
 
         _pendingTransitions[userId] = new PendingGhostTransition
@@ -115,7 +115,7 @@ public sealed class PirateGhostRespawnSystem : EntitySystem
 
     public PirateGhostRespawnDebugState GetDebugState(NetUserId userId)
     {
-        if (!TryGetState(userId, out var state) || state == null)
+        if (!TryGetState(userId, out var state))
             return default;
 
         return new PirateGhostRespawnDebugState(state.HasCrewCycle, state.TimerArmed, state.RespawnAvailableAt);
@@ -127,7 +127,7 @@ public sealed class PirateGhostRespawnSystem : EntitySystem
         return new PirateGhostRespawnAvailability(status.CanRespawn, status.RemainingTime);
     }
 
-    private bool TryGetState(NetUserId userId, [NotNullWhen(true)] out GhostRespawnState? state)
+    private bool TryGetState(NetUserId userId, [NotNullWhen(true)] out GhostRespawnState state)
     {
         if (_states.TryGetValue(userId, out var found))
         {
@@ -135,13 +135,13 @@ public sealed class PirateGhostRespawnSystem : EntitySystem
             return true;
         }
 
-        state = null;
+        state = null!;
         return false;
     }
 
     private void ArmTimerIfNeeded(NetUserId userId)
     {
-        if (!TryGetState(userId, out var state) || state == null || !state.HasCrewCycle)
+        if (!TryGetState(userId, out var state) || !state.HasCrewCycle)
         {
             _pendingTransitions.Remove(userId);
             return;
@@ -154,7 +154,7 @@ public sealed class PirateGhostRespawnSystem : EntitySystem
         }
 
         var availableAt = _timing.CurTime + GetRespawnDelay();
-        if (_pendingTransitions.Remove(userId, out var pending) && pending != null && pending.Immediate)
+        if (_pendingTransitions.Remove(userId, out var pending) && pending is { Immediate: true })
             availableAt = _timing.CurTime;
 
         state.TimerArmed = true;
@@ -163,7 +163,7 @@ public sealed class PirateGhostRespawnSystem : EntitySystem
 
     private GhostRespawnStatus GetStatus(NetUserId userId)
     {
-        if (!TryGetState(userId, out var state) || state == null || !state.HasCrewCycle)
+        if (!TryGetState(userId, out var state) || !state.HasCrewCycle)
             return new GhostRespawnStatus(true, TimeSpan.Zero);
 
         if (!state.TimerArmed)

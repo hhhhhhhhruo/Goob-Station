@@ -407,7 +407,7 @@ public sealed class GhostRespawnLobbyTests
         await pair.Client.WaitAssertion(() => netManager.ClientDisconnect("Ghost respawn reconnect test"));
         await pair.RunTicksSync(10);
 
-        await Task.WhenAll(pair.Client.WaitIdleAsync(), pair.Client.WaitIdleAsync());
+        await Task.WhenAll(pair.Client.WaitIdleAsync(), pair.Server.WaitIdleAsync());
         pair.Client.SetConnectTarget(pair.Server);
         await pair.Client.WaitPost(() => netManager.ClientConnect(null!, 0, name));
         await pair.RunTicksSync(10);

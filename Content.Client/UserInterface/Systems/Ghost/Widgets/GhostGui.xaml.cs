@@ -57,6 +57,7 @@ public sealed partial class GhostGui : UIWidget
         ThunderdomeButton.OnPressed += _ => ThunderdomePressed?.Invoke(); // Goobstation - Thunderdome
         ReturnToRoundButton.OnPressed += _ => RespawnToLobbyPressed?.Invoke(); // PIRATE
         ReturnToRoundButton.Disabled = true; // PIRATE
+        ReturnToRoundButton.Visible = false; // PIRATE
     }
 
     public void Hide()
@@ -109,10 +110,13 @@ public sealed partial class GhostGui : UIWidget
     {
         if (!hasStatus)
         {
+            ReturnToRoundButton.Visible = false;
             ReturnToRoundButton.Disabled = true;
             ReturnToRoundButton.Text = Loc.GetString("ghost-gui-return-to-round-button");
             return;
         }
+
+        ReturnToRoundButton.Visible = true;
 
         if (canRespawn)
         {
@@ -123,14 +127,14 @@ public sealed partial class GhostGui : UIWidget
 
         ReturnToRoundButton.Disabled = true;
 
-        var secondsLeft = Math.Max(1, (int) Math.Ceiling(remainingTime.TotalSeconds));
-        if (secondsLeft >= 60)
+        if (remainingTime.TotalSeconds >= 60)
         {
             var minutesLeft = Math.Max(1, (int) Math.Ceiling(remainingTime.TotalMinutes));
             ReturnToRoundButton.Text = Loc.GetString("ghost-respawn-minutes-left", ("time", minutesLeft));
             return;
         }
 
+        var secondsLeft = Math.Max(1, (int) Math.Ceiling(remainingTime.TotalSeconds));
         ReturnToRoundButton.Text = Loc.GetString("ghost-respawn-seconds-left", ("time", secondsLeft));
     }
     #endregion

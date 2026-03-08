@@ -1,5 +1,6 @@
 using System;
 using Content.Shared._Pirate.Ghost;
+using Content.Shared.GameTicking;
 using Robust.Shared.Timing;
 
 namespace Content.Client._Pirate.Ghost;
@@ -17,6 +18,7 @@ public sealed class PirateGhostRespawnSystem : EntitySystem
     public override void Initialize()
     {
         SubscribeNetworkEvent<GhostRespawnStatusEvent>(OnGhostRespawnStatus);
+        SubscribeNetworkEvent<RoundRestartCleanupEvent>(OnRoundRestartCleanup);
     }
 
     public void Reset()
@@ -53,6 +55,11 @@ public sealed class PirateGhostRespawnSystem : EntitySystem
         _canRespawn = ev.CanRespawn;
         _respawnAvailableAt = _timing.CurTime + ev.RemainingTime;
         StatusChanged?.Invoke();
+    }
+
+    private void OnRoundRestartCleanup(RoundRestartCleanupEvent ev)
+    {
+        Reset();
     }
 }
 
