@@ -61,7 +61,7 @@ public sealed class PirateGhostRespawnSystem : EntitySystem
         if (args.Mind.Comp.UserId is not { } userId)
             return;
 
-        if (!TryGetState(userId, out var state) || !state.HasCrewCycle || state.TimerArmed)
+        if (!TryGetState(userId, out var state) || state == null || !state.HasCrewCycle || state.TimerArmed)
             return;
 
         _pendingTransitions[userId] = new PendingGhostTransition
@@ -115,7 +115,7 @@ public sealed class PirateGhostRespawnSystem : EntitySystem
 
     public PirateGhostRespawnDebugState GetDebugState(NetUserId userId)
     {
-        if (!TryGetState(userId, out var state))
+        if (!TryGetState(userId, out var state) || state == null)
             return default;
 
         return new PirateGhostRespawnDebugState(state.HasCrewCycle, state.TimerArmed, state.RespawnAvailableAt);
@@ -141,7 +141,7 @@ public sealed class PirateGhostRespawnSystem : EntitySystem
 
     private void ArmTimerIfNeeded(NetUserId userId)
     {
-        if (!TryGetState(userId, out var state) || !state.HasCrewCycle)
+        if (!TryGetState(userId, out var state) || state == null || !state.HasCrewCycle)
         {
             _pendingTransitions.Remove(userId);
             return;
@@ -154,7 +154,7 @@ public sealed class PirateGhostRespawnSystem : EntitySystem
         }
 
         var availableAt = _timing.CurTime + GetRespawnDelay();
-        if (_pendingTransitions.Remove(userId, out var pending) && pending.Immediate)
+        if (_pendingTransitions.Remove(userId, out var pending) && pending != null && pending.Immediate)
             availableAt = _timing.CurTime;
 
         state.TimerArmed = true;
@@ -163,7 +163,7 @@ public sealed class PirateGhostRespawnSystem : EntitySystem
 
     private GhostRespawnStatus GetStatus(NetUserId userId)
     {
-        if (!TryGetState(userId, out var state) || !state.HasCrewCycle)
+        if (!TryGetState(userId, out var state) || state == null || !state.HasCrewCycle)
             return new GhostRespawnStatus(true, TimeSpan.Zero);
 
         if (!state.TimerArmed)
