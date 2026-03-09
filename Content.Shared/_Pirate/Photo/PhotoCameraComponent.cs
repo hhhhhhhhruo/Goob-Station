@@ -16,9 +16,9 @@ namespace Content.Shared._Pirate.Photo;
 public sealed partial class PhotoCameraComponent : Component
 {
     [DataField]
-    public Vector2 ViewBox = new Vector2(10, 10);
+    public Vector2 ViewBox = new Vector2(20, 20);
     [DataField]
-    public float MinZoom = 0.2f, MaxZoom = 1f;
+    public float MinZoom = 0.1f, MaxZoom = 1f;
 
     [DataField]
     public SoundSpecifier PhotoSound = new SoundCollectionSpecifier("PhotoCameraShutter");
