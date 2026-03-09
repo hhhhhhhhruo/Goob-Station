@@ -17,6 +17,7 @@
       - map: ["enum.StorageFillLayers.Fill"]
   - type: Item
     size: Large
+    storedOffset: 0,2
     shape:
     - 0,0,1,0
   - type: StorageFillVisualizer

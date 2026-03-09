@@ -1,13 +1,16 @@
 ent-PhotoAlbum = photo album
     .desc = A book packed with memories. Put photos into it so they appear in the final round summary. Use a pen to customize photo titles, descriptions, and captions.
 
-ent-PhotoAlbumTGGreen = green photo album
+ent-PhotoAlbumLoadoutSigned = { ent-PhotoAlbumGreen }
+    .desc = { ent-PhotoAlbumGreen.desc }
+
+ent-PhotoAlbumGreen = green photo album
     .desc = A book packed with memories. Put photos into it so they appear in the final round summary. Use a pen to customize photo titles, descriptions, and captions.
 
-ent-PhotoAlbumTGRed = red photo album
+ent-PhotoAlbumRed = red photo album
     .desc = A book packed with memories. Put photos into it so they appear in the final round summary. Use a pen to customize photo titles, descriptions, and captions.
 
-ent-PhotoAlbumTGBlue = blue photo album
+ent-PhotoAlbumBlue = blue photo album
     .desc = A book packed with memories. Put photos into it so they appear in the final round summary. Use a pen to customize photo titles, descriptions, and captions.
 
 ent-PhotoAlbumHeadCaptain = captain's photo album

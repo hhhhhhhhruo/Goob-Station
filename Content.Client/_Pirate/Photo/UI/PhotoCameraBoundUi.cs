@@ -17,6 +17,7 @@ public sealed class PhotoCameraBoundUserInterface : BoundUserInterface
 {
     private const float ControlAudioActiveVolume = 2f;
     private const float ControlAudioIdleVolume = -20f;
+    private const float MaxZoomPanRatio = 0.15f;
 
     private readonly EyeSystem _eyeSystem;
     private readonly PhotoSystem _photoSystem;
@@ -162,8 +163,9 @@ public sealed class PhotoCameraBoundUserInterface : BoundUserInterface
             ? (zoom - component.MinZoom) / zoomRange
             : 0f;
 
-        var xClamp = component.ViewBox.X * 0.5f * (1 - zoomRatio);
-        var yClamp = component.ViewBox.Y * 0.5f * (1 - zoomRatio);
+        var panRatio = MaxZoomPanRatio + (1 - MaxZoomPanRatio) * MathF.Pow(1 - zoomRatio, 0.4f);
+        var xClamp = component.ViewBox.X * 0.5f * panRatio;
+        var yClamp = component.ViewBox.Y * 0.5f * panRatio;
         pos.X = Math.Clamp(pos.X, -xClamp, xClamp);
         pos.Y = Math.Clamp(pos.Y, -yClamp, yClamp);
 
