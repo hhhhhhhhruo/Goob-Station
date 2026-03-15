@@ -165,6 +165,7 @@
     - id: MassHallucinations
     - id: MimicVendorRule
     - id: MouseMigration
+    - id: RandomVirus # Pirate
     - id: PowerGridCheck
     - id: RandomSentience
     - id: SlimesSpawn
