@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-using Content.Goobstation.Shared.Disease.Prototypes;
-using Content.Server._Pirate.StationEvents.Events;
+using Content.Goobstation.Shared.Disease;
+using Content.Pirate.Server.StationEvents.Events;
 using Robust.Shared.Prototypes;
 
-namespace Content.Server._Pirate.StationEvents.Components;
+namespace Content.Pirate.Server.StationEvents.Components;
 
 [RegisterComponent, Access(typeof(RandomVirusRule))]
 public sealed partial class RandomVirusRuleComponent : Component

@@ -4,18 +4,19 @@
 
 using Content.Goobstation.Server.Disease;
 using Content.Goobstation.Shared.Disease.Components;
-using Content.Server._Pirate.StationEvents.Components;
+using Content.Pirate.Server.StationEvents.Components;
 using Content.Server.Chat.Managers;
 using Content.Server.Station.Systems;
 using Content.Server.StationEvents.Events;
 using Content.Shared.Chat;
 using Content.Shared.GameTicking.Components;
 using Content.Shared.Humanoid;
+using Content.Shared.Mobs;
 using Content.Shared.Mobs.Components;
 using Robust.Server.Player;
 using Robust.Shared.Player;
 
-namespace Content.Server._Pirate.StationEvents.Events;
+namespace Content.Pirate.Server.StationEvents.Events;
 
 public sealed class RandomVirusRule : StationEventSystem<RandomVirusRuleComponent>
 {
@@ -47,10 +48,17 @@ public sealed class RandomVirusRule : StationEventSystem<RandomVirusRuleComponen
             candidates.Add((target, carrier));
         }
 
-        if (candidates.Count < component.TargetCount)
+        if (candidates.Count == 0)
             return;
 
-        var pickedTargets = RobustRandom.GetItems(candidates, component.TargetCount, allowDuplicates: false);
+        var targetCount = component.TargetCount;
+        if (candidates.Count < component.TargetCount)
+        {
+            Log.Warning($"RandomVirus event found only {candidates.Count} valid targets, requested {component.TargetCount}.");
+            targetCount = candidates.Count;
+        }
+
+        var pickedTargets = RobustRandom.GetItems(candidates, targetCount, allowDuplicates: false);
         foreach (var target in pickedTargets)
         {
             InfectTarget(target, component);
