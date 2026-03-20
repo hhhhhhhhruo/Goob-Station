@@ -81,6 +81,7 @@ public sealed partial class CriminalRecordsConsoleSystem : SharedCriminalRecords
         SubscribeLocalEvent<CriminalRecordsConsoleComponent, RecordModifiedEvent>(UpdateUserInterface);
         SubscribeLocalEvent<CriminalRecordsConsoleComponent, AfterGeneralRecordCreatedEvent>(UpdateUserInterface);
         #region Pirate: records photos
+        SubscribeLocalEvent<CriminalRecordsConsoleComponent, ComponentShutdown>(OnConsoleShutdown);
         SubscribeLocalEvent<CriminalRecordsConsoleComponent, RecordRemovedEvent>(OnRecordRemoved);
         #endregion
 
@@ -149,6 +150,11 @@ public sealed partial class CriminalRecordsConsoleSystem : SharedCriminalRecords
             ent.Comp.ActiveKey = null;
 
         UpdateUserInterface(ent);
+    }
+
+    private void OnConsoleShutdown(Entity<CriminalRecordsConsoleComponent> ent, ref ComponentShutdown args) // Pirate: records photos
+    {
+        _activePortraitPrintJobs.Remove(ent);
     }
 
     private void OnCreateRecord(Entity<CriminalRecordsConsoleComponent> ent, ref CriminalRecordCreateRecord msg)
@@ -657,10 +663,8 @@ public sealed partial class CriminalRecordsConsoleSystem : SharedCriminalRecords
                 return;
             }
 
-            if (imageData is { Length: > 0 } finalImage)
-                _photoSystem.TrySetPhotoCardData(printed, photo, finalImage, previewData, customName: printedName);
-            else if (!string.IsNullOrWhiteSpace(printedName))
-                photo.CustomName = printedName;
+            var finalImage = imageData!; // Pirate: records photos
+            _photoSystem.TrySetPhotoCardData(printed, photo, finalImage, previewData, customName: printedName); // Pirate: records photos
 
             if (!TerminatingOrDeleted(mob.Value))
                 _popup.PopupEntity(Loc.GetString("criminal-records-console-photo-print-complete"), printed, mob.Value);

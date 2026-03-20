@@ -14,6 +14,7 @@
 using System.Linq;
 using Content.Server.Station.Systems;
 using Content.Server.StationRecords.Components;
+using Content.Shared.Access.Systems;
 using Content.Shared.StationRecords;
 using Robust.Server.GameObjects;
 #region Pirate: records photos
@@ -32,6 +33,7 @@ namespace Content.Server.StationRecords.Systems;
 
 public sealed class GeneralStationRecordConsoleSystem : EntitySystem
 {
+    [Dependency] private readonly AccessReaderSystem _access = default!;
     [Dependency] private readonly UserInterfaceSystem _ui = default!;
     [Dependency] private readonly StationSystem _station = default!;
     [Dependency] private readonly StationRecordsSystem _stationRecords = default!;
@@ -62,7 +64,7 @@ public sealed class GeneralStationRecordConsoleSystem : EntitySystem
 
     private void OnRecordDelete(Entity<GeneralStationRecordConsoleComponent> ent, ref DeleteStationRecord args)
     {
-        if (!ent.Comp.CanDeleteEntries)
+        if (!CanManageRecords(ent) || !_access.IsAllowed(args.Actor, ent)) // Pirate: records photos
             return;
 
         var owning = _station.GetOwningStation(ent.Owner);
@@ -118,7 +120,7 @@ public sealed class GeneralStationRecordConsoleSystem : EntitySystem
     #region Pirate: records photos
     private void OnCreateRecord(Entity<GeneralStationRecordConsoleComponent> ent, ref GeneralRecordCreateRecord msg)
     {
-        if (!ent.Comp.CanDeleteEntries)
+        if (!CanManageRecords(ent) || !_access.IsAllowed(msg.Actor, ent)) // Pirate: records photos
             return;
 
         if (_station.GetOwningStation(ent) is not { } station ||
@@ -182,6 +184,9 @@ public sealed class GeneralStationRecordConsoleSystem : EntitySystem
 
     private void OnEditIdentity(Entity<GeneralStationRecordConsoleComponent> ent, ref GeneralRecordEditIdentity msg)
     {
+        if (!CanManageRecords(ent) || !_access.IsAllowed(msg.Actor, ent)) // Pirate: records photos
+            return;
+
         if (_station.GetOwningStation(ent) is not { } station || ent.Comp.ActiveKey is not { } id)
             return;
 
@@ -223,6 +228,9 @@ public sealed class GeneralStationRecordConsoleSystem : EntitySystem
 
     private void OnEditForensics(Entity<GeneralStationRecordConsoleComponent> ent, ref GeneralRecordEditForensics msg)
     {
+        if (!CanManageRecords(ent) || !_access.IsAllowed(msg.Actor, ent)) // Pirate: records photos
+            return;
+
         if (_station.GetOwningStation(ent) is not { } station || ent.Comp.ActiveKey is not { } id)
             return;
 
@@ -354,6 +362,11 @@ public sealed class GeneralStationRecordConsoleSystem : EntitySystem
 
         return true;
     }
+
+    private bool CanManageRecords(Entity<GeneralStationRecordConsoleComponent> ent) // Pirate: records photos
+    {
+        return _access.GetMainAccessReader(ent.Owner, out _) || ent.Comp.CanDeleteEntries; // Pirate: records photos
+    }
     #endregion
 
     private void UpdateUserInterface(Entity<GeneralStationRecordConsoleComponent> ent)
@@ -364,7 +377,7 @@ public sealed class GeneralStationRecordConsoleSystem : EntitySystem
         if (!TryComp<StationRecordsComponent>(owningStation, out var stationRecords))
         {
             _ui.SetUiState(uid, GeneralStationRecordConsoleKey.Key, // Pirate: records photos
-                new GeneralStationRecordConsoleState(null, null, null, console.Filter, ent.Comp.CanDeleteEntries, ent.Comp.MaxStringLength)); // Pirate: records photos
+                new GeneralStationRecordConsoleState(null, null, null, console.Filter, CanManageRecords(ent), ent.Comp.MaxStringLength)); // Pirate: records photos
             return;
         }
 
@@ -374,7 +387,7 @@ public sealed class GeneralStationRecordConsoleSystem : EntitySystem
         {
             case 0:
                 _ui.SetUiState(uid, GeneralStationRecordConsoleKey.Key,  // Pirate: records photos
-                    new GeneralStationRecordConsoleState(null, null, null, console.Filter, ent.Comp.CanDeleteEntries, ent.Comp.MaxStringLength));  // Pirate: records photos
+                    new GeneralStationRecordConsoleState(null, null, null, console.Filter, CanManageRecords(ent), ent.Comp.MaxStringLength));  // Pirate: records photos
                 return;
             default:
                 if (console.ActiveKey == null)
@@ -393,7 +406,7 @@ public sealed class GeneralStationRecordConsoleSystem : EntitySystem
             console.ActiveKey = null;
 
         var newState = new GeneralStationRecordConsoleState(console.ActiveKey, record, listing, console.Filter,
-            ent.Comp.CanDeleteEntries, ent.Comp.MaxStringLength);
+            CanManageRecords(ent), ent.Comp.MaxStringLength); // Pirate: records photos
         #endregion
         _ui.SetUiState(uid, GeneralStationRecordConsoleKey.Key, newState);
     }

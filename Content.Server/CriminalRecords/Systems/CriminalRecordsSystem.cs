@@ -205,10 +205,14 @@ public sealed class CriminalRecordsSystem : SharedCriminalRecordsSystem
             {
                 var (i, r) = cr;
                 var key = new StationRecordKey(i, station);
-                // Hopefully it will work smoothly.....
-                _records.TryGetRecord(key, out GeneralStationRecord? generalRecord);
-                return new WantedRecord(generalRecord!, r.Status, r.Reason, r.InitiatorName, r.History);
-            });
+                _records.TryGetRecord(key, out GeneralStationRecord? generalRecord); // Pirate: record photos
+                var targetInfo = generalRecord ?? r.GeneralRecordSnapshot; // Pirate: record photos
+                return targetInfo == null 
+                    ? (WantedRecord?) null
+                    : new WantedRecord(targetInfo, r.Status, r.Reason, r.InitiatorName, r.History);
+            })
+            .Where(record => record != null) // Pirate: record photos
+            .Select(record => record!.Value); // Pirate: record photos
         var state = new WantedListUiState(records.ToList());
 
         _cartridge.UpdateCartridgeUiState(loaderUid, state);

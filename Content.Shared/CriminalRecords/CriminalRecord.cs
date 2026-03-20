@@ -38,7 +38,7 @@ public sealed partial record CriminalRecord
     [DataField]
     public string? InitiatorName;
 
-    #region Pirate: Pirate: records photos
+    #region Pirate: records photos
     /// <summary>
     /// Snapshot of the linked general record data.
     /// Used when a criminal record temporarily exists without a general record entry.

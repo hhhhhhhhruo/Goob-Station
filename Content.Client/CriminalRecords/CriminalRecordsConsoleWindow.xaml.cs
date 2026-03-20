@@ -317,7 +317,16 @@ public sealed partial class CriminalRecordsConsoleWindow : FancyWindow
         PrintPortraitButton.OnPressed += async _ =>
         {
             if (OnPrintPhoto != null)
-                await OnPrintPhoto();
+            {
+                try
+                {
+                    await OnPrintPhoto();
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.ErrorS("criminal-records", $"PrintPortraitButton.OnPressed failed while awaiting OnPrintPhoto/BuildPrintPhotoMessage: {ex}"); // Pirate: records photos
+                }
+            }
         };
         UploadPortraitButton.OnPressed += _ => OnUploadPhoto?.Invoke();
         PopulateGenderOptions();
@@ -906,7 +915,7 @@ public sealed partial class CriminalRecordsConsoleWindow : FancyWindow
             await using var file = _resManager.UserData.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             using var imageData = new MemoryStream();
             await file.CopyToAsync(imageData);
-            return NormalizeGeneratedPortraitImageData(imageData.ToArray());
+            return imageData.ToArray(); // Pirate: records photos
         }
         catch (Exception)
         {

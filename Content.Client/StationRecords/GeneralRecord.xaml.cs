@@ -246,7 +246,7 @@ public sealed partial class GeneralRecord : Control
             _suppressEvents = false;
         }
 
-        if (sendUpdate)
+        if (sendUpdate && !_speciesUnset && !_genderUnset) // Pirate: records photos
             OnIdentityInfoChanged?.Invoke(profile.Species, profile.Nationality, profile.Employer, profile.Age, profile.Gender);
     }
 

@@ -34,7 +34,7 @@ public sealed partial class GeneralStationRecordConsoleComponent : Component
     /// Whether this Records Console is able to delete entries.
     /// </summary>
     [DataField]
-    public bool CanDeleteEntries = true; // Pirate: records photos
+    public bool CanDeleteEntries = false;
 
     #region Pirate: records photos
     /// <summary>
