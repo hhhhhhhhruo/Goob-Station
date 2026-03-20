@@ -27,8 +27,8 @@
       employers:
       - Interdyne
   startingGear: InterdyneOfficerGear
-  name: "офіцер Interdyne"
-  description: "керуйте операціями Interdyne, забезпечуючи виконання контрактів та безпеку персоналу"
+  name: job-name-captain-interdyne
+  description: job-description-captain-interdyne
   icon: "JobIconCaptainInterdyne"
   goobcoins: 10 #Goob content (PvE content)
   canBeAntag: false

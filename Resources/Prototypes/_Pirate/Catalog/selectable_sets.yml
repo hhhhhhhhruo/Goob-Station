@@ -154,8 +154,8 @@
 # Interdyne ENG
 - type: selectableSet
   id: IPBeltCE
-  name: "Пояс головного інженера"
-  description: "Пояс з просунутими інструментами для головного інженера"
+  name: Пояс з просунутими інструмментами
+  description: Пояс СЕ
   sprite:
     sprite: Clothing/Belt/ce.rsi
     state: icon
