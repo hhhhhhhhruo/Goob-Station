@@ -209,3 +209,14 @@ ent-PrintedDocumentNoteBeginningMilitaryActions = НОТА ПРО ПОЧАТОК
     .desc = { ent-PrintedDocument.desc }
 ent-PrintedDocumentReportAccomplishmentGoals = ЗВІТ ПРО ВИКОНАННЯ ЦІЛЕЙ
     .desc = { ent-PrintedDocument.desc }
+
+ent-PrintedDocumentReportOnEliminationOfViolations = Звіт про усунення порушень
+    .desc = { ent-PrintedDocument.desc }
+ent-PrintedDocumentReportDepartment = Звіт про роботу відділу
+    .desc = { ent-PrintedDocument.desc }
+ent-PrintedDocumentAppeal = Звернення
+    .desc = { ent-PrintedDocument.desc }
+ent-PrintedDocumentRequestCallMembersCentralCommitteeDSO = Запит на виклик членів ЦК, ДСО
+    .desc = { ent-PrintedDocument.desc }
+ent-PrintedDocumentPermissionToExtendMarriage = Дозвіл на розширення шлюбу
+    .desc = { ent-PrintedDocument.desc }
