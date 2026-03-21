@@ -6,8 +6,8 @@
 - type: entity
   id: PhotoAlbum
   parent: BaseItem
-  name: photo album
-  description: A book with a bunch of memories. Put the photos in it and they will end up in the round end summary window. Use a pen to customize photo titles, descriptions, and captions.
+  name: "фотоальбом"
+  description: "Книга зі спогадами. Покладіть туди фотографії, щоб вони потрапили у фінальне зведення раунду. Використайте ручку, щоб налаштувати назви, описи та підписи фото."
   components:
   - type: Sprite
     sprite: _Pirate/Objects/Misc/Photo/photo_album.rsi
@@ -55,7 +55,7 @@
 - type: entity
   id: PhotoAlbumGreen
   parent: PhotoAlbum
-  name: green photo album
+  name: "зелений фотоальбом"
   components:
   - type: Sprite
     sprite: _Pirate/Objects/Misc/Photo/photo_album.rsi
@@ -70,7 +70,7 @@
 - type: entity
   id: PhotoAlbumRed
   parent: PhotoAlbum
-  name: red photo album
+  name: "червоний фотоальбом"
   components:
   - type: Sprite
     sprite: _Pirate/Objects/Misc/Photo/photo_album.rsi
@@ -85,7 +85,7 @@
 - type: entity
   id: PhotoAlbumBlue
   parent: PhotoAlbum
-  name: blue photo album
+  name: "синій фотоальбом"
   components:
   - type: Sprite
     sprite: _Pirate/Objects/Misc/Photo/photo_album.rsi
@@ -100,7 +100,7 @@
 - type: entity
   id: PhotoAlbumHeadCaptain
   parent: PhotoAlbumBlue
-  name: captain's photo album
+  name: "фотоальбом капітана"
   components:
   - type: PhotoAlbum
     isSigned: true
@@ -110,7 +110,7 @@
 - type: entity
   id: PhotoAlbumHeadHop
   parent: PhotoAlbumBlue
-  name: head of personnel's photo album
+  name: "фотоальбом голови персоналу"
   components:
   - type: PhotoAlbum
     isSigned: true
@@ -120,7 +120,7 @@
 - type: entity
   id: PhotoAlbumHeadHos
   parent: PhotoAlbumBlue
-  name: head of security's photo album
+  name: "фотоальбом голови служби безпеки"
   components:
   - type: PhotoAlbum
     isSigned: true
@@ -130,7 +130,7 @@
 - type: entity
   id: PhotoAlbumHeadRd
   parent: PhotoAlbumBlue
-  name: research director's photo album
+  name: "фотоальбом наукового керівника"
   components:
   - type: PhotoAlbum
     isSigned: true
@@ -140,7 +140,7 @@
 - type: entity
   id: PhotoAlbumHeadCmo
   parent: PhotoAlbumBlue
-  name: chief medical officer's photo album
+  name: "фотоальбом головного лікаря"
   components:
   - type: PhotoAlbum
     isSigned: true
@@ -150,7 +150,7 @@
 - type: entity
   id: PhotoAlbumHeadQm
   parent: PhotoAlbumBlue
-  name: quartermaster's photo album
+  name: "фотоальбом квартирмейстера"
   components:
   - type: PhotoAlbum
     isSigned: true
@@ -160,7 +160,7 @@
 - type: entity
   id: PhotoAlbumHeadCe
   parent: PhotoAlbumBlue
-  name: chief engineer's photo album
+  name: "фотоальбом головного інженера"
   components:
   - type: PhotoAlbum
     isSigned: true
@@ -170,8 +170,8 @@
 - type: entity
   id: PhotoAlbumMakeshift
   parent: PhotoAlbum
-  name: makeshift photo album
-  description: A makeshift book containing a bunch of memories. Put the photos in it and they will end up in the round end summary window. Use a pen to customize photo titles, descriptions, and captions.
+  name: "саморобний фотоальбом"
+  description: "Саморобна книжка зі спогадами. Покладіть туди фотографії, щоб вони потрапили у фінальне зведення раунду. Використайте ручку, щоб налаштувати назви, описи та підписи фото."
   components:
   - type: Sprite
     sprite: _Pirate/Objects/Misc/Photo/photo_album_makeshift.rsi
