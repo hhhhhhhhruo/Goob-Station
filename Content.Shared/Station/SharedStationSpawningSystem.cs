@@ -92,6 +92,7 @@ using System.Linq;
 using Content.Shared.Hands.Components;
 using Content.Shared.Hands.EntitySystems;
 using Content.Shared.Inventory;
+using Content.Shared._Pirate.Photo; // Pirate: records selected loadout spawns
 using Content.Shared.Preferences.Loadouts;
 using Content.Shared.Roles;
 using Content.Shared.Storage;
@@ -144,7 +145,8 @@ public abstract class SharedStationSpawningSystem : EntitySystem
                     continue;
                 }
 
-                EquipStartingGear(entity, loadoutProto, raiseEvent: false);
+                // Pirate: records selected loadout spawns
+                EquipStartingGear(entity, loadoutProto, raiseEvent: false, pirateFromSelectedLoadout: true);
             }
         }
 
@@ -174,25 +176,40 @@ public abstract class SharedStationSpawningSystem : EntitySystem
         }
     }
 
-    public void EquipStartingGear(EntityUid entity, LoadoutPrototype loadout, bool raiseEvent = true)
+    public void EquipStartingGear(
+        EntityUid entity,
+        LoadoutPrototype loadout,
+        bool raiseEvent = true,
+        bool pirateFromSelectedLoadout = false) // Pirate: records selected loadout spawns
     {
-        EquipStartingGear(entity, loadout.StartingGear, raiseEvent);
-        EquipStartingGear(entity, (IEquipmentLoadout) loadout, raiseEvent);
+        // Pirate: records selected loadout spawns
+        EquipStartingGear(entity, loadout.StartingGear, raiseEvent, pirateFromSelectedLoadout);
+        // Pirate: records selected loadout spawns
+        EquipStartingGear(entity, (IEquipmentLoadout) loadout, raiseEvent, pirateFromSelectedLoadout);
     }
 
     /// <summary>
     /// <see cref="EquipStartingGear(Robust.Shared.GameObjects.EntityUid,System.Nullable{Robust.Shared.Prototypes.ProtoId{Content.Shared.Roles.StartingGearPrototype}},bool)"/>
     /// </summary>
-    public void EquipStartingGear(EntityUid entity, ProtoId<StartingGearPrototype>? startingGear, bool raiseEvent = true)
+    public void EquipStartingGear(
+        EntityUid entity,
+        ProtoId<StartingGearPrototype>? startingGear,
+        bool raiseEvent = true,
+        bool pirateFromSelectedLoadout = false) // Pirate: records selected loadout spawns
     {
         PrototypeManager.TryIndex(startingGear, out var gearProto);
-        EquipStartingGear(entity, gearProto, raiseEvent);
+        // Pirate: records selected loadout spawns
+        EquipStartingGear(entity, gearProto, raiseEvent, pirateFromSelectedLoadout);
     }
 
     /// <summary>
     /// <see cref="EquipStartingGear(Robust.Shared.GameObjects.EntityUid,System.Nullable{Robust.Shared.Prototypes.ProtoId{Content.Shared.Roles.StartingGearPrototype}},bool)"/>
     /// </summary>
-    public void EquipStartingGear(EntityUid entity, StartingGearPrototype? startingGear, bool raiseEvent = true)
+    public void EquipStartingGear(
+        EntityUid entity,
+        StartingGearPrototype? startingGear,
+        bool raiseEvent = true,
+        bool pirateFromSelectedLoadout = false) // Pirate: records selected loadout spawns
     {
         // Begin DeltaV Additions: Fix nukie IPCs not having comms
         if (startingGear is not {} proto)
@@ -200,7 +217,8 @@ public abstract class SharedStationSpawningSystem : EntitySystem
 
         _internalEncryption.TryInsertEncryptionKey(entity, proto);
         // End DeltaV Additions
-        EquipStartingGear(entity, (IEquipmentLoadout?) startingGear, raiseEvent);
+        // Pirate: records selected loadout spawns
+        EquipStartingGear(entity, (IEquipmentLoadout?) startingGear, raiseEvent, pirateFromSelectedLoadout);
     }
 
     /// <summary>
@@ -209,7 +227,11 @@ public abstract class SharedStationSpawningSystem : EntitySystem
     /// <param name="entity">Entity to load out.</param>
     /// <param name="startingGear">Starting gear to use.</param>
     /// <param name="raiseEvent">Should we raise the event for equipped. Set to false if you will call this manually</param>
-    public void EquipStartingGear(EntityUid entity, IEquipmentLoadout? startingGear, bool raiseEvent = true)
+    public void EquipStartingGear(
+        EntityUid entity,
+        IEquipmentLoadout? startingGear,
+        bool raiseEvent = true,
+        bool pirateFromSelectedLoadout = false) // Pirate: records selected loadout spawns
     {
         if (startingGear == null)
             return;
@@ -224,6 +246,8 @@ public abstract class SharedStationSpawningSystem : EntitySystem
                 if (!string.IsNullOrEmpty(equipmentStr))
                 {
                     var equipmentEntity = Spawn(equipmentStr, xform.Coordinates);
+                    // Pirate: records selected loadout spawns
+                    RaiseSelectedLoadoutEntitySpawned(equipmentEntity, entity, pirateFromSelectedLoadout);
                     if (slot.Whitelist != null && !_whitelist.IsWhitelistPass(slot.Whitelist, equipmentEntity)) // Goob Change - Plasmamen
                     {
                         QueueDel(equipmentEntity);
@@ -241,6 +265,8 @@ public abstract class SharedStationSpawningSystem : EntitySystem
             foreach (var prototype in inhand)
             {
                 var inhandEntity = Spawn(prototype, coords);
+                // Pirate: records selected loadout spawns
+                RaiseSelectedLoadoutEntitySpawned(inhandEntity, entity, pirateFromSelectedLoadout);
 
                 if (_handsSystem.TryGetEmptyHand((entity, handsComponent), out var emptyHand))
                 {
@@ -267,6 +293,8 @@ public abstract class SharedStationSpawningSystem : EntitySystem
                     foreach (var entProto in entProtos)
                     {
                         var spawnedEntity = Spawn(entProto, coords);
+                        // Pirate: records selected loadout spawns
+                        RaiseSelectedLoadoutEntitySpawned(spawnedEntity, entity, pirateFromSelectedLoadout);
 
                         _storage.Insert(slotEnt.Value, spawnedEntity, out _, storageComp: storage, playSound: false);
                     }
@@ -280,6 +308,17 @@ public abstract class SharedStationSpawningSystem : EntitySystem
             RaiseLocalEvent(entity, ref ev);
         }
     }
+
+    #region Pirate: records selected loadout spawns
+    private void RaiseSelectedLoadoutEntitySpawned(EntityUid spawnedEntity, EntityUid owner, bool pirateFromSelectedLoadout)
+    {
+        if (!pirateFromSelectedLoadout)
+            return;
+
+        var ev = new SelectedLoadoutEntitySpawnedEvent(owner);
+        RaiseLocalEvent(spawnedEntity, ev);
+    }
+    #endregion
 
     /// <summary>
     ///     Gets all the gear for a given slot when passed a loadout.

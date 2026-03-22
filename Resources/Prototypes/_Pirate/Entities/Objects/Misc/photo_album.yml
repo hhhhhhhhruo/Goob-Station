@@ -51,6 +51,9 @@
   suffix: loadout
   components:
   - type: AutoSignPhotoAlbum
+  - type: PersistentPhotoAlbum
+    ownerKind: profile
+    albumKey: personal
 
 - type: entity
   id: PhotoAlbumGreen

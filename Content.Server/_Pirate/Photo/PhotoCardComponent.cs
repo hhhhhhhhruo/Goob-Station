@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-only
 
+using Content.Shared._Pirate.Photo;
+
 namespace Content.Server._Pirate.Photo;
 
 [RegisterComponent]
@@ -40,6 +42,21 @@ public sealed partial class PhotoCardComponent : Component
     /// </summary>
     [DataField]
     public string? BaseDescription;
+
+    /// <summary>
+    /// Structured capture metadata for later persistence and feature use.
+    /// </summary>
+    public PhotoCaptureData? CaptureData;
+
+    /// <summary>
+    /// UTC timestamp when the photo was taken.
+    /// </summary>
+    public DateTime? CreatedAt;
+
+    /// <summary>
+    /// UTC timestamp when user-editable metadata was last changed.
+    /// </summary>
+    public DateTime? UpdatedAt;
 
     /// <summary>
     /// Entities captured in this photo at capture time.

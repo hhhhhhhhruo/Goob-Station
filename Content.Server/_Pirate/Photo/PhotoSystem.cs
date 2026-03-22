@@ -27,6 +27,7 @@ using Robust.Shared.Prototypes;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Numerics;
 
@@ -295,7 +296,11 @@ public sealed partial class PhotoSystem : SharedPhotoSystem
             photo.DeadSeen = new List<EntityUid>(captureMetadata.DeadSeen);
             photo.NamesSeen = new List<string>(captureMetadata.NamesSeen);
             photo.BaseDescription = captureMetadata.Description;
+            photo.CaptureData = captureMetadata.CaptureData;
         }
+
+        photo.CreatedAt = DateTime.UtcNow;
+        photo.UpdatedAt = photo.CreatedAt;
 
         UpdatePhotoCardAppearance(card, photo);
         UpdatePhotoCardExamineDescription(card, photo);
@@ -344,7 +349,11 @@ public sealed partial class PhotoSystem : SharedPhotoSystem
         byte[]? previewData,
         string? customName = null,
         string? customDescription = null,
-        string? caption = null)
+        string? caption = null,
+        string? baseDescription = null,
+        PhotoCaptureData? captureData = null,
+        DateTime? createdAt = null,
+        DateTime? updatedAt = null)
     {
         if (!TryPreparePhotoCardData(imageData, previewData, out var preparedImageData, out var preparedPreviewData))
             return false;
@@ -354,11 +363,57 @@ public sealed partial class PhotoSystem : SharedPhotoSystem
         component.CustomName = customName;
         component.CustomDescription = customDescription;
         component.Caption = caption;
+        component.BaseDescription = baseDescription;
+        component.CaptureData = captureData;
+        component.NamesSeen = captureData?.RecognizedNames is { } names
+            ? new List<string>(names)
+            : new List<string>();
+        component.MobsSeen = new List<EntityUid>();
+        component.DeadSeen = new List<EntityUid>();
+        component.CreatedAt = createdAt;
+        component.UpdatedAt = updatedAt ?? createdAt;
 
         UpdatePhotoCardAppearance(uid, component);
         UpdatePhotoCardExamineDescription(uid, component);
         UpdatePhotoCardInterface(uid, component);
         return true;
+    }
+
+    public bool TryCreatePersistentPhotoData(PhotoCardComponent component, [NotNullWhen(true)] out PersistentPhotoData? data)
+    {
+        data = null;
+        if (component.ImageData is not { Length: > 0 } imageData)
+            return false;
+
+        data = new PersistentPhotoData
+        {
+            ImageData = [.. imageData],
+            PreviewData = component.PreviewData is { Length: > 0 } preview ? [.. preview] : null,
+            CustomName = component.CustomName,
+            CustomDescription = component.CustomDescription,
+            Caption = component.Caption,
+            BaseDescription = component.BaseDescription,
+            CaptureData = CloneCaptureData(component.CaptureData),
+            CreatedAt = component.CreatedAt,
+            UpdatedAt = component.UpdatedAt
+        };
+        return true;
+    }
+
+    public bool TryApplyPersistentPhotoData(EntityUid uid, PhotoCardComponent component, PersistentPhotoData data)
+    {
+        return TrySetPhotoCardData(
+            uid,
+            component,
+            data.ImageData,
+            data.PreviewData,
+            data.CustomName,
+            data.CustomDescription,
+            data.Caption,
+            data.BaseDescription,
+            CloneCaptureData(data.CaptureData),
+            data.CreatedAt,
+            data.UpdatedAt);
     }
 
     private bool CanPrintPhoto(EntityUid uid, PhotoCameraComponent component)
@@ -519,6 +574,7 @@ public sealed partial class PhotoSystem : SharedPhotoSystem
         var mobsSeen = new List<EntityUid>();
         var deadSeen = new List<EntityUid>();
         var namesSeen = new List<string>();
+        var subjects = new List<PhotoCapturedSubjectData>();
         var seen = new HashSet<EntityUid>();
 
         foreach (var netEntity in capturedEntities)
@@ -541,14 +597,27 @@ public sealed partial class PhotoSystem : SharedPhotoSystem
 
             var heldItems = GetHeldItems(entity, photographer);
             var gender = GetPhotoGender(entity);
+            subjects.Add(new PhotoCapturedSubjectData(
+                entityName,
+                mobState.CurrentState,
+                gender,
+                new List<string>(heldItems),
+                HasComp<HumanoidAppearanceComponent>(entity)));
             descriptionLines.Add(BuildEntityDescriptionLine(entityName, mobState.CurrentState, heldItems, gender));
         }
+
+        var captureData = new PhotoCaptureData(
+            areaWidth,
+            areaHeight,
+            subjects,
+            new List<string>(namesSeen));
 
         return new PhotoCaptureMetadata(
             mobsSeen,
             deadSeen,
             namesSeen,
-            string.Join("\n", descriptionLines));
+            string.Join("\n", descriptionLines),
+            captureData);
     }
 
     private static float SanitizeCaptureZoom(PhotoCameraComponent component, float zoom)
@@ -752,7 +821,11 @@ public sealed partial class PhotoSystem : SharedPhotoSystem
         if (!TryComp<PhotoCardComponent>(photo, out var photoCard))
             return;
 
+        if (photoCard.CustomName == customName)
+            return;
+
         photoCard.CustomName = customName;
+        TouchPhotoCard(photoCard);
         UpdatePhotoCardInterface(photo, photoCard);
     }
 
@@ -767,7 +840,11 @@ public sealed partial class PhotoSystem : SharedPhotoSystem
         if (!TryComp<PhotoCardComponent>(photo, out var photoCard))
             return;
 
+        if (photoCard.CustomDescription == customDescription)
+            return;
+
         photoCard.CustomDescription = customDescription;
+        TouchPhotoCard(photoCard);
         UpdatePhotoCardExamineDescription(photo, photoCard);
     }
 
@@ -782,7 +859,11 @@ public sealed partial class PhotoSystem : SharedPhotoSystem
         if (!TryComp<PhotoCardComponent>(photo, out var photoCard))
             return;
 
+        if (photoCard.Caption == caption)
+            return;
+
         photoCard.Caption = caption;
+        TouchPhotoCard(photoCard);
         UpdatePhotoCardInterface(photo, photoCard);
     }
 
@@ -845,11 +926,41 @@ public sealed partial class PhotoSystem : SharedPhotoSystem
         _userInterface.SetUiState(uid, PhotoCardUiKey.Key, state);
     }
 
+    private static PhotoCaptureData? CloneCaptureData(PhotoCaptureData? data)
+    {
+        if (data == null)
+            return null;
+
+        var subjects = new List<PhotoCapturedSubjectData>(data.Subjects.Count);
+        foreach (var subject in data.Subjects)
+        {
+            subjects.Add(new PhotoCapturedSubjectData(
+                subject.DisplayName,
+                subject.State,
+                subject.GenderKey,
+                new List<string>(subject.HeldItems),
+                subject.IsHumanoid));
+        }
+
+        return new PhotoCaptureData(
+            data.AreaWidth,
+            data.AreaHeight,
+            subjects,
+            new List<string>(data.RecognizedNames));
+    }
+
+    private static void TouchPhotoCard(PhotoCardComponent component)
+    {
+        component.UpdatedAt = DateTime.UtcNow;
+        component.CreatedAt ??= component.UpdatedAt;
+    }
+
     private sealed record PhotoCaptureMetadata(
         List<EntityUid> MobsSeen,
         List<EntityUid> DeadSeen,
         List<string> NamesSeen,
-        string Description);
+        string Description,
+        PhotoCaptureData CaptureData);
 }
 
 

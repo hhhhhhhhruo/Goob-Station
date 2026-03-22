@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 using System;
+using System.Linq;
 using Content.Server._Pirate.Photo;
 using Content.Server.GameTicking;
 using Content.Server.Popups;
@@ -219,20 +220,30 @@ public sealed class PhotoAlbumSystem : EntitySystem
                 continue;
 
             List<AlbumImageData> photos = new();
+            var sortablePhotos = new List<(int OriginalIndex, PhotoCardComponent PhotoCard)>();
 
             string? authorCKey = default;
             string? authorName = default;
 
-            foreach (var item in container.ContainedEntities)
+            for (var i = 0; i < container.ContainedEntities.Count; i++)
             {
+                var item = container.ContainedEntities[i];
                 if (!TryComp<PhotoCardComponent>(item, out var photoCard))
                     continue;
 
                 if (photoCard.ImageData is null)
                     continue;
 
+                sortablePhotos.Add((i, photoCard));
+            }
+
+            foreach (var (_, photoCard) in sortablePhotos
+                         .OrderByDescending(entry => entry.PhotoCard.UpdatedAt ?? entry.PhotoCard.CreatedAt ?? DateTime.MinValue)
+                         .ThenByDescending(entry => entry.PhotoCard.CreatedAt ?? DateTime.MinValue)
+                         .ThenBy(entry => entry.OriginalIndex))
+            {
                 var imageId = Guid.NewGuid();
-                _roundEndImageData[imageId] = photoCard.ImageData;
+                _roundEndImageData[imageId] = photoCard.ImageData!;
                 photos.Add(new AlbumImageData(imageId, photoCard.PreviewData, photoCard.CustomName));
             }
 

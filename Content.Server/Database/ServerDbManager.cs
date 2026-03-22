@@ -79,6 +79,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Net;
@@ -86,6 +87,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Content.Server.Administration.Logs;
+using Content.Shared._Pirate.Photo; // Pirate: persistent photo albums
 using Content.Shared.Administration.Logs;
 using Content.Shared.CCVar;
 using Content.Shared.Construction.Prototypes;
@@ -482,6 +484,21 @@ namespace Content.Server.Database
             byte rating,
             CancellationToken cancel = default);
 
+        #endregion
+
+        #region Pirate: persistent photo albums
+        Task<int?> GetCharacterProfileIdAsync(NetUserId userId, int slot, CancellationToken cancel = default);
+        Task<PersistentPhotoAlbumSnapshot?> GetPersistentPhotoAlbumSnapshotAsync(
+            string ownerKind,
+            string ownerId,
+            string albumKey,
+            CancellationToken cancel = default);
+        Task UpsertPersistentPhotoAlbumSnapshotAsync(
+            string ownerKind,
+            string ownerId,
+            string albumKey,
+            IReadOnlyCollection<PersistentPhotoData> photos,
+            CancellationToken cancel = default);
         #endregion
 
         #region DB Notifications
@@ -1375,6 +1392,37 @@ namespace Content.Server.Database
         {
             DbWriteOpsMetric.Inc();
             return RunDbCommand(() => _db.UpsertPirateAdminHelpRatingAsync(adminKey, adminName, playerId, rating, cancel));
+        }
+
+        #endregion
+
+        #region Pirate: persistent photo albums
+
+        public Task<int?> GetCharacterProfileIdAsync(NetUserId userId, int slot, CancellationToken cancel = default)
+        {
+            DbReadOpsMetric.Inc();
+            return RunDbCommand(() => _db.GetCharacterProfileIdAsync(userId, slot, cancel));
+        }
+
+        public Task<PersistentPhotoAlbumSnapshot?> GetPersistentPhotoAlbumSnapshotAsync(
+            string ownerKind,
+            string ownerId,
+            string albumKey,
+            CancellationToken cancel = default)
+        {
+            DbReadOpsMetric.Inc();
+            return RunDbCommand(() => _db.GetPersistentPhotoAlbumSnapshotAsync(ownerKind, ownerId, albumKey, cancel));
+        }
+
+        public Task UpsertPersistentPhotoAlbumSnapshotAsync(
+            string ownerKind,
+            string ownerId,
+            string albumKey,
+            IReadOnlyCollection<PersistentPhotoData> photos,
+            CancellationToken cancel = default)
+        {
+            DbWriteOpsMetric.Inc();
+            return RunDbCommand(() => _db.UpsertPersistentPhotoAlbumSnapshotAsync(ownerKind, ownerId, albumKey, photos, cancel));
         }
 
         #endregion

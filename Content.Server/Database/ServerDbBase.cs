@@ -127,6 +127,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -137,6 +138,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Content.Pirate.Common.AlternativeJobs; // Pirate - Alternative Jobs
 using Content.Server.Administration.Logs;
+using Content.Shared._Pirate.Photo; // Pirate: persistent photo albums
 using Content.Server.Administration.Managers;
 using Content.Shared._RMC14.LinkAccount;
 using Content.Shared.Administration.Logs;
@@ -2371,6 +2373,142 @@ INSERT INTO player_round (players_id, rounds_id) VALUES ({players[player]}, {id}
         }
 
         #endregion
+
+        #region Pirate: persistent photo albums
+
+        public async Task<int?> GetCharacterProfileIdAsync(NetUserId userId, int slot, CancellationToken cancel = default)
+        {
+            await using var db = await GetDb(cancel);
+
+            return await db.DbContext.Profile
+                .Where(profile => profile.Preference.UserId == userId.UserId && profile.Slot == slot)
+                .Select(profile => (int?) profile.Id)
+                .SingleOrDefaultAsync(cancel);
+        }
+
+        public async Task<PersistentPhotoAlbumSnapshot?> GetPersistentPhotoAlbumSnapshotAsync(
+            string ownerKind,
+            string ownerId,
+            string albumKey,
+            CancellationToken cancel = default)
+        {
+            await using var db = await GetDb(cancel);
+
+            var album = await db.DbContext.PersistentPhotoAlbums
+                .Include(entry => entry.Photos)
+                .SingleOrDefaultAsync(
+                    entry => entry.OwnerKind == ownerKind &&
+                             entry.OwnerId == ownerId &&
+                             entry.AlbumKey == albumKey,
+                    cancel);
+
+            if (album == null)
+                return null;
+
+            var photos = new List<PersistentPhotoData>(album.Photos.Count);
+            foreach (var photo in album.Photos.OrderBy(entry => entry.SortOrder))
+            {
+                photos.Add(new PersistentPhotoData
+                {
+                    ImageData = [.. photo.ImageData],
+                    PreviewData = photo.PreviewData is { Length: > 0 } preview ? [.. preview] : null,
+                    CustomName = photo.CustomName,
+                    CustomDescription = photo.CustomDescription,
+                    Caption = photo.Caption,
+                    BaseDescription = photo.BaseDescription,
+                    CaptureData = DeserializeCaptureData(photo.CaptureDataJson),
+                    CreatedAt = photo.CreatedAt,
+                    UpdatedAt = photo.UpdatedAt
+                });
+            }
+
+            return new PersistentPhotoAlbumSnapshot
+            {
+                OwnerKind = album.OwnerKind,
+                OwnerId = album.OwnerId,
+                AlbumKey = album.AlbumKey,
+                SavedAt = album.SavedAt,
+                Photos = photos
+            };
+        }
+
+        public async Task UpsertPersistentPhotoAlbumSnapshotAsync(
+            string ownerKind,
+            string ownerId,
+            string albumKey,
+            IReadOnlyCollection<PersistentPhotoData> photos,
+            CancellationToken cancel = default)
+        {
+            await using var db = await GetDb(cancel);
+
+            var album = await db.DbContext.PersistentPhotoAlbums
+                .Include(entry => entry.Photos)
+                .SingleOrDefaultAsync(
+                    entry => entry.OwnerKind == ownerKind &&
+                             entry.OwnerId == ownerId &&
+                             entry.AlbumKey == albumKey,
+                    cancel);
+
+            if (album == null)
+            {
+                album = new PersistentPhotoAlbum
+                {
+                    OwnerKind = ownerKind,
+                    OwnerId = ownerId,
+                    AlbumKey = albumKey
+                };
+                db.DbContext.PersistentPhotoAlbums.Add(album);
+            }
+            else if (album.Photos.Count > 0)
+            {
+                db.DbContext.PersistentPhotoAlbumPhotos.RemoveRange(album.Photos);
+                album.Photos.Clear();
+            }
+
+            album.SavedAt = DateTime.UtcNow;
+
+            var sortOrder = 0;
+            foreach (var photo in photos)
+            {
+                album.Photos.Add(new PersistentPhotoAlbumPhoto
+                {
+                    SortOrder = sortOrder++,
+                    ImageData = [.. photo.ImageData],
+                    PreviewData = photo.PreviewData is { Length: > 0 } preview ? [.. preview] : null,
+                    CustomName = photo.CustomName,
+                    CustomDescription = photo.CustomDescription,
+                    Caption = photo.Caption,
+                    BaseDescription = photo.BaseDescription,
+                    CaptureDataJson = SerializeCaptureData(photo.CaptureData),
+                    CreatedAt = photo.CreatedAt,
+                    UpdatedAt = photo.UpdatedAt
+                });
+            }
+
+            await db.DbContext.SaveChangesAsync(cancel);
+        }
+
+        #endregion
+
+        private static string? SerializeCaptureData(PhotoCaptureData? data)
+        {
+            return data == null ? null : JsonSerializer.Serialize(data);
+        }
+
+        private static PhotoCaptureData? DeserializeCaptureData(string? json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+                return null;
+
+            try
+            {
+                return JsonSerializer.Deserialize<PhotoCaptureData>(json);
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
+        }
 
         public abstract Task SendNotification(DatabaseNotification notification);
 
