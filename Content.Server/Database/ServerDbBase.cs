@@ -160,9 +160,6 @@ namespace Content.Server.Database
 {
     public abstract class ServerDbBase
     {
-        private const int PiratePersistentPhotoBaseDescriptionMaxLength = 2000; // Pirate: cameras (photo persistence)
-        private const int PiratePersistentPhotoCaptureDataJsonMaxLength = 10000; // Pirate: cameras (photo persistence)
-
         private readonly ISawmill _opsLog;
 
         public event Action<DatabaseNotification>? OnNotificationReceived;
@@ -2417,7 +2414,7 @@ INSERT INTO player_round (players_id, rounds_id) VALUES ({players[player]}, {id}
                     CustomName = photo.CustomName,
                     CustomDescription = photo.CustomDescription,
                     Caption = photo.Caption,
-                    BaseDescription = TruncatePersistentPhotoText(photo.BaseDescription, PiratePersistentPhotoBaseDescriptionMaxLength),
+                    BaseDescription = TruncatePersistentPhotoBaseDescription(photo.BaseDescription),
                     CaptureData = DeserializeCaptureData(photo.CaptureDataJson),
                     CreatedAt = NormalizeDatabaseTime(photo.CreatedAt),
                     UpdatedAt = NormalizeDatabaseTime(photo.UpdatedAt)
@@ -2480,10 +2477,10 @@ INSERT INTO player_round (players_id, rounds_id) VALUES ({players[player]}, {id}
                     SortOrder = sortOrder++,
                     ImageData = [.. photo.ImageData],
                     PreviewData = photo.PreviewData is { Length: > 0 } preview ? [.. preview] : null,
-                    CustomName = photo.CustomName,
-                    CustomDescription = photo.CustomDescription,
-                    Caption = photo.Caption,
-                    BaseDescription = TruncatePersistentPhotoText(photo.BaseDescription, PiratePersistentPhotoBaseDescriptionMaxLength),
+                    CustomName = TruncatePersistentPhotoCustomName(photo.CustomName),
+                    CustomDescription = TruncatePersistentPhotoCustomDescription(photo.CustomDescription),
+                    Caption = TruncatePersistentPhotoCaption(photo.Caption),
+                    BaseDescription = TruncatePersistentPhotoBaseDescription(photo.BaseDescription),
                     CaptureDataJson = SerializeCaptureData(photo.CaptureData),
                     CreatedAt = photo.CreatedAt,
                     UpdatedAt = photo.UpdatedAt
@@ -2493,14 +2490,43 @@ INSERT INTO player_round (players_id, rounds_id) VALUES ({players[player]}, {id}
             await db.DbContext.SaveChangesAsync(cancel);
         }
 
-
         private static string? SerializeCaptureData(PhotoCaptureData? data)
         {
-            return data == null
-                ? null
-                : TruncatePersistentPhotoText(
-                    JsonSerializer.Serialize(data),
-                    PiratePersistentPhotoCaptureDataJsonMaxLength);
+            const int captureDataJsonMaxLength = 10000;
+
+            if (data == null)
+                return null;
+
+            var sanitized = SanitizeCaptureData(data);
+            var json = JsonSerializer.Serialize(sanitized);
+            if (json.Length <= captureDataJsonMaxLength)
+                return json;
+
+            return TrimSerializedCaptureDataToFit(sanitized);
+        }
+
+        private static string? TruncatePersistentPhotoBaseDescription(string? value)
+        {
+            const int baseDescriptionMaxLength = 2000;
+            return TruncatePersistentPhotoText(value, baseDescriptionMaxLength);
+        }
+
+        private static string? TruncatePersistentPhotoCustomName(string? value)
+        {
+            const int customNameMaxLength = 32;
+            return TruncatePersistentPhotoText(value, customNameMaxLength);
+        }
+
+        private static string? TruncatePersistentPhotoCustomDescription(string? value)
+        {
+            const int customDescriptionMaxLength = 128;
+            return TruncatePersistentPhotoText(value, customDescriptionMaxLength);
+        }
+
+        private static string? TruncatePersistentPhotoCaption(string? value)
+        {
+            const int captionMaxLength = 256;
+            return TruncatePersistentPhotoText(value, captionMaxLength);
         }
 
         private static string? TruncatePersistentPhotoText(string? value, int maxLength)
@@ -2523,6 +2549,130 @@ INSERT INTO player_round (players_id, rounds_id) VALUES ({players[player]}, {id}
             catch (JsonException)
             {
                 return null;
+            }
+        }
+
+        private static PhotoCaptureData SanitizeCaptureData(PhotoCaptureData data)
+        {
+            const int captureSubjectsMaxCount = 32;
+            const int captureRecognizedNamesMaxCount = 32;
+            const int captureHeldItemsMaxCount = 8;
+            const int captureDisplayNameMaxLength = 128;
+            const int captureGenderKeyMaxLength = 32;
+            const int captureHeldItemMaxLength = 64;
+            const int captureRecognizedNameMaxLength = 128;
+
+            var subjects = new List<PhotoCapturedSubjectData>(
+                Math.Min(data.Subjects.Count, captureSubjectsMaxCount));
+            for (var i = 0; i < data.Subjects.Count && i < captureSubjectsMaxCount; i++)
+            {
+                var subject = data.Subjects[i];
+                var heldItems = new List<string>(
+                    Math.Min(subject.HeldItems.Count, captureHeldItemsMaxCount));
+
+                for (var j = 0; j < subject.HeldItems.Count && j < captureHeldItemsMaxCount; j++)
+                {
+                    heldItems.Add(
+                        TruncatePersistentPhotoText(
+                            subject.HeldItems[j],
+                            captureHeldItemMaxLength) ?? string.Empty);
+                }
+
+                subjects.Add(new PhotoCapturedSubjectData(
+                    TruncatePersistentPhotoText(
+                        subject.DisplayName,
+                        captureDisplayNameMaxLength) ?? string.Empty,
+                    subject.State,
+                    TruncatePersistentPhotoText(
+                        subject.GenderKey,
+                        captureGenderKeyMaxLength) ?? string.Empty,
+                    heldItems,
+                    subject.IsHumanoid));
+            }
+
+            var recognizedNames = new List<string>(
+                Math.Min(data.RecognizedNames.Count, captureRecognizedNamesMaxCount));
+            for (var i = 0; i < data.RecognizedNames.Count && i < captureRecognizedNamesMaxCount; i++)
+            {
+                recognizedNames.Add(
+                    TruncatePersistentPhotoText(
+                        data.RecognizedNames[i],
+                        captureRecognizedNameMaxLength) ?? string.Empty);
+            }
+
+            return new PhotoCaptureData(
+                data.AreaWidth,
+                data.AreaHeight,
+                subjects,
+                recognizedNames);
+        }
+
+        private static string TrimSerializedCaptureDataToFit(PhotoCaptureData data)
+        {
+            const int captureDataJsonMaxLength = 10000;
+            var subjects = new List<PhotoCapturedSubjectData>(data.Subjects.Count);
+            foreach (var subject in data.Subjects)
+            {
+                subjects.Add(new PhotoCapturedSubjectData(
+                    subject.DisplayName,
+                    subject.State,
+                    subject.GenderKey,
+                    new List<string>(subject.HeldItems),
+                    subject.IsHumanoid));
+            }
+
+            var recognizedNames = new List<string>(data.RecognizedNames);
+
+            while (true)
+            {
+                var candidate = new PhotoCaptureData(
+                    data.AreaWidth,
+                    data.AreaHeight,
+                    subjects,
+                    recognizedNames);
+
+                var json = JsonSerializer.Serialize(candidate);
+                if (json.Length <= captureDataJsonMaxLength)
+                    return json;
+
+                if (recognizedNames.Count > 0)
+                {
+                    recognizedNames.RemoveAt(recognizedNames.Count - 1);
+                    continue;
+                }
+
+                var removedHeldItem = false;
+                for (var i = subjects.Count - 1; i >= 0; i--)
+                {
+                    if (subjects[i].HeldItems.Count == 0)
+                        continue;
+
+                    var heldItems = new List<string>(subjects[i].HeldItems);
+                    heldItems.RemoveAt(heldItems.Count - 1);
+                    subjects[i] = new PhotoCapturedSubjectData(
+                        subjects[i].DisplayName,
+                        subjects[i].State,
+                        subjects[i].GenderKey,
+                        heldItems,
+                        subjects[i].IsHumanoid);
+                    removedHeldItem = true;
+                    break;
+                }
+
+                if (removedHeldItem)
+                    continue;
+
+                if (subjects.Count > 0)
+                {
+                    subjects.RemoveAt(subjects.Count - 1);
+                    continue;
+                }
+
+                return JsonSerializer.Serialize(new PhotoCaptureData(
+                    data.AreaWidth,
+                    data.AreaHeight,
+                    new List<PhotoCapturedSubjectData>(),
+                    new List<string>()));
             }
         }
         #endregion

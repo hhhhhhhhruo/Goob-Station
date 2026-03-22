@@ -18,6 +18,7 @@ using Robust.Server.Containers;
 using Robust.Server.Player;
 using Robust.Shared.Containers;
 using Robust.Shared.Player;
+using Robust.Shared.Utility;
 
 namespace Content.Server._Pirate.RoundEnd.PhotoAlbum;
 public sealed class PhotoAlbumSystem : EntitySystem
@@ -171,6 +172,9 @@ public sealed class PhotoAlbumSystem : EntitySystem
                 Text = persistent.IsPublic
                     ? Loc.GetString("photoalbum-make-private-verb")
                     : Loc.GetString("photoalbum-make-public-verb"),
+                Icon = persistent.IsPublic
+                    ? new SpriteSpecifier.Texture(new("/Textures/Interface/VerbIcons/lock.svg.192dpi.png"))
+                    : new SpriteSpecifier.Texture(new("/Textures/Interface/VerbIcons/unlock.svg.192dpi.png")),
                 Act = () => VerbToggleAlbumPrivacy(entity, persistent, user)
             };
             args.Verbs.Add(privacyVerb);
@@ -179,10 +183,16 @@ public sealed class PhotoAlbumSystem : EntitySystem
 
     private void OnExamine(Entity<PhotoAlbumComponent> entity, ref ExaminedEvent args)
     {
-        if (!entity.Comp.IsSigned)
-            return;
+        if (TryComp<PersistentPhotoAlbumComponent>(entity, out var persistent))
+        {
+            args.PushMarkup(Loc.GetString("photoalbum-persistent-examine"));
 
-        args.PushMarkup(Loc.GetString("photoalbum-signed-examine"));
+            if (!persistent.IsPublic)
+                args.PushMarkup(Loc.GetString("photoalbum-private-examine"));
+        }
+
+        if (entity.Comp.IsSigned)
+            args.PushMarkup(Loc.GetString("photoalbum-signed-examine"));
     }
 
     private void VerbSignPhotoAlbum(Entity<PhotoAlbumComponent> entity, EntityUid user)

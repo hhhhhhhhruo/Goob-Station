@@ -14,7 +14,7 @@ ent-PhotoAlbumBlue = blue photo album
     .desc = { ent-PhotoAlbum.desc }
 
 ent-PhotoAlbumDepartmentService = service department photo album
-    .desc = A big book used to store photos and mementos.
+    .desc = { ent-PhotoAlbum.desc }
 
 ent-PhotoAlbumDepartmentSecurity = security photo album
     .desc = { ent-PhotoAlbumDepartmentService.desc }
