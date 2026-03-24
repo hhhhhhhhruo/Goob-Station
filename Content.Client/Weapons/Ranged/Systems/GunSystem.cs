@@ -255,141 +255,20 @@ public sealed partial class GunSystem : SharedGunSystem
             Target = target,
             Coordinates = GetNetCoordinates(coordinates),
             Gun = GetNetEntity(gunUid),
+            // Pirate: gunplay
+            Continuous = true,
         });
     }
 
     public override void Shoot(EntityUid gunUid, GunComponent gun, List<(EntityUid? Entity, IShootable Shootable)> ammo,
         EntityCoordinates fromCoordinates, EntityCoordinates toCoordinates, out bool userImpulse, EntityUid? user = null, bool throwItems = false)
     {
-        userImpulse = true;
         // Pirate: gunplay
-        var shotProjectiles = new List<EntityUid>();
-
-        // Pirate: gunplay
-        var fromMap = TransformSystem.ToMapCoordinates(fromCoordinates);
-        var toMap = TransformSystem.ToMapCoordinates(toCoordinates).Position;
-        var mapDirection = toMap - fromMap.Position;
-        if (mapDirection == Vector2.Zero)
-        {
-            userImpulse = false;
-            return;
-        }
-
-        var mapAngle = mapDirection.ToAngle();
-        var angle = GetPredictedRecoilAngle(Timing.CurTime, (gunUid, gun), mapAngle, user);
-        var fromEnt = MapManager.TryFindGridAt(fromMap, out var gridUid, out _)
-            ? TransformSystem.WithEntityId(fromCoordinates, gridUid)
-            : new EntityCoordinates(_maps.GetMapOrInvalid(fromMap.MapId), fromMap.Position);
-        var toMapBeforeRecoil = toMap;
-        toMap = fromMap.Position + angle.ToVec() * mapDirection.Length();
-        mapDirection = toMap - fromMap.Position;
-        var gunVelocity = Physics.GetMapLinearVelocity(fromEnt);
-        var worldAngle = mapDirection.ToAngle();
-
-        foreach (var (ent, shootable) in ammo)
-        {
-            if (throwItems)
-            {
-                // Pirate: gunplay
-                ShootOrThrowPredicted(ent!.Value, mapDirection, gunVelocity, gun, gunUid, user, toMapBeforeRecoil);
-                shotProjectiles.Add(ent.Value);
-                Recoil(user, mapDirection, gun.CameraRecoilScalarModified);
-                continue;
-            }
-
-            switch (shootable)
-            {
-                case CartridgeAmmoComponent cartridge:
-                    if (!cartridge.Spent)
-                    {
-                        // Pirate: gunplay
-                        SetCartridgeSpent(ent!.Value, cartridge, true);
-
-                        var projectile = PredictedSpawnAtPosition(cartridge.Prototype, fromEnt);
-                        CreateAndFireProjectiles(projectile, cartridge);
-
-                        if (cartridge.DeleteOnSpawn)
-                        {
-                            PredictedDel(ent.Value);
-                        }
-                        else if (!Containers.IsEntityInContainer(ent.Value))
-                        {
-                            EjectCartridgePredicted(PredictedRandom(gunUid), user, ent.Value, angle);
-                        }
-                    }
-                    else
-                    {
-                        userImpulse = false;
-                        Audio.PlayPredicted(gun.SoundEmpty, gunUid, user);
-                    }
-
-                    break;
-                case AmmoComponent newAmmo:
-                    // Pirate: gunplay
-                    CreateAndFireProjectiles(ent!.Value, newAmmo);
-                    break;
-                case HitscanPrototype:
-                    Audio.PlayPredicted(gun.SoundGunshotModified, gunUid, user);
-                    Recoil(user, mapDirection, gun.CameraRecoilScalarModified);
-                    break;
-            }
-        }
-
-        // Pirate: gunplay
-        RaiseLocalEvent(gunUid, new AmmoShotEvent
-        {
-            FiredProjectiles = shotProjectiles,
-        });
-
-        // Pirate: gunplay
-        if (user is { } userUid)
-        {
-            var userEv = new AmmoShotUserEvent
-            {
-                Gun = gunUid,
-                FiredProjectiles = shotProjectiles,
-            };
-            RaiseLocalEvent(userUid, userEv);
-        }
-
-        // Pirate: gunplay
-        void CreateAndFireProjectiles(EntityUid ammoEnt, AmmoComponent ammoComp)
-        {
-            if (TryComp<ProjectileSpreadComponent>(ammoEnt, out var ammoSpreadComp))
-            {
-                var spreadEvent = new GunGetAmmoSpreadEvent(ammoSpreadComp.Spread);
-                RaiseLocalEvent(gunUid, ref spreadEvent);
-
-                var angles = LinearSpreadPredicted(
-                    mapAngle - spreadEvent.Spread / 2,
-                    mapAngle + spreadEvent.Spread / 2,
-                    ammoSpreadComp.Count);
-
-                ShootOrThrowPredicted(ammoEnt, angles[0].ToVec(), gunVelocity, gun, gunUid, user, toMapBeforeRecoil);
-                shotProjectiles.Add(ammoEnt);
-
-                for (var i = 1; i < ammoSpreadComp.Count; i++)
-                {
-                    var pellet = PredictedSpawnAtPosition(ammoSpreadComp.Proto, fromEnt);
-                    // Pirate: gunplay
-                    SetProjectilePerfectHitEntitiesPredicted(pellet, user, new MapCoordinates(toMap, fromMap.MapId));
-                    ShootOrThrowPredicted(pellet, angles[i].ToVec(), gunVelocity, gun, gunUid, user, toMapBeforeRecoil);
-                    shotProjectiles.Add(pellet);
-                }
-            }
-            else
-            {
-                ShootOrThrowPredicted(ammoEnt, mapDirection, gunVelocity, gun, gunUid, user, toMapBeforeRecoil);
-                shotProjectiles.Add(ammoEnt);
-            }
-
-            MuzzleFlash(gunUid, ammoComp, worldAngle, user);
-            Audio.PlayPredicted(gun.SoundGunshotModified, gunUid, user);
-            Recoil(user, mapDirection, gun.CameraRecoilScalarModified);
-        }
+        SharedShoot(gunUid, gun, ammo, fromCoordinates, toCoordinates, out userImpulse, user, throwItems);
     }
 
-    private void Recoil(EntityUid? user, Vector2 recoil, float recoilScalar)
+    // Pirate: gunplay
+    protected override void Recoil(EntityUid? user, Vector2 recoil, float recoilScalar)
     {
         if (!Timing.IsFirstTimePredicted || user == null || recoil == Vector2.Zero || recoilScalar == 0)
             return;

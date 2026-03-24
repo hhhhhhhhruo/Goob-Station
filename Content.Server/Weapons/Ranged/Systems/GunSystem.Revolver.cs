@@ -17,13 +17,7 @@ public sealed partial class GunSystem
 {
     protected override void SpinRevolver(EntityUid revolverUid, RevolverAmmoProviderComponent component, EntityUid? user = null)
     {
+        // Pirate: gunplay
         base.SpinRevolver(revolverUid, component, user);
-        var index = Random.Next(component.Capacity);
-
-        if (component.CurrentIndex == index)
-            return;
-
-        component.CurrentIndex = index;
-        Dirty(revolverUid, component);
     }
 }

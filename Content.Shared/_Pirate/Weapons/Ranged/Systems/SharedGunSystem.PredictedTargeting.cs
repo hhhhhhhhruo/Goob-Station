@@ -11,7 +11,12 @@ public abstract partial class SharedGunSystem
 
     private readonly HashSet<Entity<BodyComponent>> _predictedBodies = new();
 
-    protected TargetBodyPart? GetPredictedTargetPart(Entity<TargetingComponent?>? targeting, MapCoordinates shootCoords, MapCoordinates targetCoords)
+    public TargetBodyPart? GetTargetPart(EntityUid? shooter, EntityUid target)
+        => shooter is { } targeting
+            ? GetTargetPart(targeting, TransformSystem.GetMapCoordinates(targeting), TransformSystem.GetMapCoordinates(target))
+            : null;
+
+    public TargetBodyPart? GetTargetPart(Entity<TargetingComponent?>? targeting, MapCoordinates shootCoords, MapCoordinates targetCoords)
     {
         if (shootCoords.MapId != targetCoords.MapId || targeting is not { } ent)
             return null;
@@ -26,7 +31,7 @@ public abstract partial class SharedGunSystem
             : ent.Comp.Target;
     }
 
-    protected void SetProjectilePerfectHitEntitiesPredicted(EntityUid projectile, Entity<TargetingComponent?>? shooter, MapCoordinates coords)
+    public void SetProjectilePerfectHitEntities(EntityUid projectile, Entity<TargetingComponent?>? shooter, MapCoordinates coords)
     {
         if (shooter is not { } ent)
             return;
@@ -34,7 +39,7 @@ public abstract partial class SharedGunSystem
         if (!Resolve(ent, ref ent.Comp, false))
             return;
 
-        var part = GetPredictedTargetPart(shooter, coords, TransformSystem.GetMapCoordinates(ent));
+        var part = GetTargetPart(shooter, coords, TransformSystem.GetMapCoordinates(ent));
         if (part is null or TargetBodyPart.Chest)
             return;
 
@@ -48,4 +53,10 @@ public abstract partial class SharedGunSystem
 
         Dirty(projectile, comp);
     }
+
+    protected TargetBodyPart? GetPredictedTargetPart(Entity<TargetingComponent?>? targeting, MapCoordinates shootCoords, MapCoordinates targetCoords)
+        => GetTargetPart(targeting, shootCoords, targetCoords);
+
+    protected void SetProjectilePerfectHitEntitiesPredicted(EntityUid projectile, Entity<TargetingComponent?>? shooter, MapCoordinates coords)
+        => SetProjectilePerfectHitEntities(projectile, shooter, coords);
 }

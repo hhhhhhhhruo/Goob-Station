@@ -230,6 +230,9 @@ public abstract partial class SharedGunSystem : EntitySystem
             gun.Target = potentialTarget;
         // Goob edit end
         AttemptShoot(user.Value, ent, gun);
+        // Pirate: gunplay
+        if (msg.Continuous)
+            gun.ShotCounter = 0;
     }
 
     private void OnStopShootRequest(RequestStopShootEvent ev, EntitySessionEventArgs args)

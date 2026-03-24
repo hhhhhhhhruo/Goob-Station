@@ -145,7 +145,8 @@ public sealed class ProjectileSystem : SharedProjectileSystem
     private void DoHit(EntityUid uid, ProjectileComponent component, PhysicsComponent ourBody, EntityUid target, Fixture otherFixture)
     {
         // it's here so this check is only done once before possible hit
-        var attemptEv = new ProjectileReflectAttemptEvent(uid, component, false);
+        // Pirate: gunplay
+        var attemptEv = new ProjectileReflectAttemptEvent(uid, component, false, target);
         RaiseLocalEvent(target, ref attemptEv);
         if (attemptEv.Cancelled)
         {

@@ -1,8 +1,10 @@
 using Content.Server.Movement.Components;
 using Content.Server.Movement.Systems;
 using Content.Server.Projectiles;
+using Content.Shared.CCVar;
 using Content.Shared._Pirate.Projectiles;
 using Content.Shared.Weapons.Ranged.Systems;
+using Robust.Shared.Configuration;
 using Robust.Shared.Physics.Events;
 using Robust.Shared.Player;
 
@@ -10,6 +12,7 @@ namespace Content.Server._Pirate.Projectiles;
 
 public sealed class LagCompProjectileSystem : EntitySystem
 {
+    [Dependency] private readonly IConfigurationManager _cfg = default!;
     [Dependency] private readonly LagCompensationSystem _lag = default!;
     [Dependency] private readonly ProjectileSystem _projectile = default!;
     [Dependency] private readonly SharedTransformSystem _transform = default!;
@@ -29,6 +32,8 @@ public sealed class LagCompProjectileSystem : EntitySystem
         SubscribeLocalEvent<PlayerShotProjectileEvent>(OnShotProjectile);
         SubscribeLocalEvent<LagCompProjectileComponent, StartCollideEvent>(OnStartCollide);
         SubscribeLocalEvent<LagCompProjectileComponent, EndCollideEvent>(OnEndCollide);
+
+        Subs.CVar(_cfg, CCVars.GunLagCompRange, value => Range = value, true);
     }
 
     public override void Update(float frameTime)
