@@ -10,6 +10,7 @@ using Content.Shared.Standing;
 using Content.Shared.Weapons.Melee;
 using Content.Shared.Weapons.Melee.Events;
 using Robust.Shared.Timing;
+using Content.Shared._taBooRet;
 
 namespace Content.Server._taBooRet
 {
