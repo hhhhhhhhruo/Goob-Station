@@ -344,7 +344,7 @@ public sealed partial class GunSystem : SharedGunSystem
     // TODO: Pseudo RNG so the client can predict these.
     #region Hitscan effects
 
-    private void FireEffects(EntityCoordinates fromCoordinates, float distance, Angle angle, HitscanPrototype hitscan, EntityUid? hitEntity = null)
+    private void FireEffects(EntityCoordinates fromCoordinates, float distance, Angle angle, HitscanPrototype hitscan, EntityUid? hitEntity = null, EntityUid? user = null) // Pirate: gunplay
     {
         // Lord
         // Forgive me for the shitcode I am about to do
@@ -397,10 +397,17 @@ public sealed partial class GunSystem : SharedGunSystem
 
         if (sprites.Count > 0)
         {
+            #region Pirate: gunplay
+            var filter = Filter.Pvs(fromCoordinates, entityMan: EntityManager);
+
+            if (TryComp<ActorComponent>(user, out var actor))
+                filter.RemovePlayer(actor.PlayerSession);
+
             RaiseNetworkEvent(new HitscanEvent
             {
                 Sprites = sprites,
-            }, Filter.Pvs(fromCoordinates, entityMan: EntityManager));
+            }, filter);
+            #endregion
         }
     }
 

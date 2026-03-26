@@ -67,7 +67,7 @@ public sealed partial class GunSystem
                 var hit = result.HitEntity;
                 lastHit = hit;
 
-                FireEffects(effectCoordinates, result.Distance, dir.Normalized().ToAngle(), hitscan, hit);
+                FireEffects(effectCoordinates, result.Distance, dir.Normalized().ToAngle(), hitscan, hit, user);
 
                 var ev = new HitScanReflectAttemptEvent(user, gunUid, hitscan.Reflective, dir, false, hitscan.Damage, hit);
                 RaiseLocalEvent(hit, ref ev);
@@ -128,7 +128,7 @@ public sealed partial class GunSystem
         }
         else
         {
-            FireEffects(effectCoordinates, hitscan.MaxLength, dir.ToAngle(), hitscan);
+            FireEffects(effectCoordinates, hitscan.MaxLength, dir.ToAngle(), hitscan, user: user);
         }
 
         Audio.PlayPredicted(gun.SoundGunshotModified, gunUid, user);
