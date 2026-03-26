@@ -191,7 +191,7 @@
   equipment:
     shoes: ClothingShoesBootsWinterSnowjackBso
 
-- type: loadout
+- type: loadout # PIRATE
   id: BlueShieldHighHeels
   equipment:
     shoes: ClothingShoesHighheelBoots
