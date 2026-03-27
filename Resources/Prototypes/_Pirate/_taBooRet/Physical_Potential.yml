@@ -7,19 +7,27 @@
       - BorgChassis
   components:
     - type: PhysicalPotential
-      strains: []
-      damageBonus: {}
+
+      trainingEffectiveness: 0.5
+
+      # Damage
       damageRisingSpeed: 0.02
+      maxDamageBonus: 5
 
+      # Defense
       defenseRisingSpeed: 0.02
-      defenseBonus: 0
+      maxDefenseBonus: 5
 
-      staminaRisingSpeed: 0.2
+      # Stamina
+      staminaRisingSpeed: 0.1
+      maxStamina: 200
       sprintInterval: 1
 
       pushUpsEfficiency: 0.3
 
-      timeForRest: 180
+      timeForRest: 15
 
+      # Strain system
       strainsApplyingDelay: 0.5
-      hungerCost: 1
+      hungerCost: 2
+      maxStrainsNumber: 150

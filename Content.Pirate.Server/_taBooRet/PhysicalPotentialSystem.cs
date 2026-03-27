@@ -11,6 +11,7 @@ using Content.Shared.Weapons.Melee;
 using Content.Shared.Weapons.Melee.Events;
 using Robust.Shared.Timing;
 using Content.Shared._taBooRet;
+using Robust.Shared.Random;
 
 namespace Content.Server._taBooRet
 {
@@ -18,6 +19,7 @@ namespace Content.Server._taBooRet
     {
         [Dependency] private readonly IGameTiming _timing = default!;
         [Dependency] private readonly HungerSystem _hungerSystem = default!;
+        [Dependency] private readonly IRobustRandom _random = default!;
 
         public override void Initialize()
         {
@@ -25,8 +27,9 @@ namespace Content.Server._taBooRet
             SubscribeLocalEvent<PhysicalPotentialComponent, MeleeHitEvent>(OnMeleeHit);
             SubscribeLocalEvent<PhysicalPotentialComponent, DamageModifyEvent>(OnDamageModify);
             SubscribeLocalEvent<PhysicalPotentialComponent, StoodEvent>(OnStood);
-        }
 
+           
+        }
         public override void Update(float frameTime)
         {
             base.Update(frameTime);
@@ -50,7 +53,7 @@ namespace Content.Server._taBooRet
                 if (mob.CurrentState != MobState.Alive) continue;
 
                 var damageStrain = GetDamageStain(uid, comp, melee);
-                // Create and queue a new training strain 
+                // Create and queue a new training strain
                 var newStrain = new TrainingStrain { Damage = damageStrain };
                 AddStrain(comp, newStrain);
             }
@@ -148,7 +151,22 @@ namespace Content.Server._taBooRet
         // Adds a new training point to the processing queue 
         public void AddStrain(PhysicalPotentialComponent comp, TrainingStrain strain)
         {
-            comp.Strains.Add(strain);
+            if (comp.Strains.Count < comp.MaxStrainsNumber)
+            {
+                int fullExecutions = (int) MathF.Floor(comp.trainingEffectiveness);
+
+                for (int i = 0; i < fullExecutions; i++)
+                {
+                    comp.Strains.Add(strain);
+                }
+
+                float remainder = comp.trainingEffectiveness - fullExecutions;
+                if (_random.Prob(remainder))
+                {
+                    comp.Strains.Add(strain);
+                }
+            }
+
             // Set cooldown (rest period) before training absorption begins 
             comp.EndRestTime = _timing.CurTime + TimeSpan.FromSeconds(comp.TimeForRest);
             comp.IsResting = true;
@@ -181,22 +199,24 @@ namespace Content.Server._taBooRet
         {
             if (comp.Strains.Count == 0) return;
 
-            // Fetch the oldest strain from the queue (FIFO) 
-            var strain = comp.Strains[0];
+            var strain = comp.Strains[comp.Strains.Count -1];
 
             // Update damage bonus
+            if (comp.DamageBonus.GetTotal() < comp.MaxDamageBonus)
             comp.DamageBonus += strain.Damage;
 
             // Update defense bonus
+            if (comp.DefenseBonus < comp.MaxDamageBonus)
             comp.DefenseBonus += strain.Defense;
 
             // Update stamina bonus
             if (TryComp<StaminaComponent>(uid, out var stamina))
             {
+                if (stamina.CritThreshold < comp.MaxStamina)
                 stamina.CritThreshold += strain.Stamina;
             }
 
-            comp.Strains.RemoveAt(0);
+            comp.Strains.RemoveAt(comp.Strains.Count -1);
 
             // Mark component as dirty to sync data with the client 
             Dirty(uid, comp);

@@ -24,12 +24,18 @@ namespace Content.Shared._taBooRet
     [RegisterComponent, NetworkedComponent]
     public sealed partial class PhysicalPotentialComponent : Component
     {
+        [DataField("trainingEffectiveness"), ViewVariables(VVAccess.ReadWrite)]
+        public float trainingEffectiveness = 0.5f;
+
         #region Damage
         [DataField("strains")]
         public List<TrainingStrain> Strains = new();
 
         [DataField("damageBonus")]
         public DamageSpecifier DamageBonus = new();
+
+        [DataField("maxDamageBonus"), ViewVariables(VVAccess.ReadWrite)]
+        public float MaxDamageBonus = 5;
 
         [DataField("damageRisingSpeed"), ViewVariables(VVAccess.ReadWrite)]
         public FixedPoint2 DamageRisingSpeed = 0.02f;
@@ -41,15 +47,21 @@ namespace Content.Shared._taBooRet
 
         [DataField("defenseBonus")]
         public FixedPoint2 DefenseBonus = new();
+
+        [DataField("maxDefenseBonus"), ViewVariables(VVAccess.ReadWrite)]
+        public float MaxDefenseBonus = 5;
         #endregion
 
         #region Stamina and Sprint
         [DataField("staminaRisingSpeed"), ViewVariables(VVAccess.ReadWrite)]
-        public float StaminaRisingSpeed = 0.2f;
+        public float StaminaRisingSpeed = 0.1f;
 
         public bool IsSprinting;
 
         public float SprintTimer;
+
+        [DataField("maxStamina")]
+        public float MaxStamina = 200;
 
         [DataField("sprintInterval"), ViewVariables(VVAccess.ReadWrite)]
         public float SprintInterval = 1;
@@ -68,11 +80,14 @@ namespace Content.Shared._taBooRet
         #endregion
 
         #region Strain
+        [DataField(""), ViewVariables(VVAccess.ReadWrite)]
+        public float MaxStrainsNumber = 150;
+
         [DataField("strainsApplyingDelay"), ViewVariables(VVAccess.ReadWrite)]
         public float StrainsApplyingDelay = 0.5f;
 
         [DataField("hungerCost"), ViewVariables(VVAccess.ReadWrite)]
-        public float HungerCost = 1f;
+        public float HungerCost = 2f;
         #endregion
     }
 }
