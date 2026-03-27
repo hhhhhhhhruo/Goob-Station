@@ -80,7 +80,7 @@ namespace Content.Shared._taBooRet
         #endregion
 
         #region Strain
-        [DataField("maxStainsNumber"), ViewVariables(VVAccess.ReadWrite)]
+        [DataField("maxStrainsNumber"), ViewVariables(VVAccess.ReadWrite)]
         public float MaxStrainsNumber = 150;
 
         [DataField("strainsApplyingDelay"), ViewVariables(VVAccess.ReadWrite)]
