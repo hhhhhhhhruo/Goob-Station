@@ -199,15 +199,19 @@ namespace Content.Server._taBooRet
         {
             if (comp.Strains.Count == 0) return;
 
-            var strain = comp.Strains[comp.Strains.Count -1];
+            var strain = comp.Strains[comp.Strains.Count - 1];
 
             // Update damage bonus
             if (comp.DamageBonus.GetTotal() < comp.MaxDamageBonus)
-            comp.DamageBonus += strain.Damage;
+            {
+                comp.DamageBonus += strain.Damage;
+            }
 
             // Update defense bonus
-            if (comp.DefenseBonus < comp.MaxDamageBonus)
-            comp.DefenseBonus += strain.Defense;
+            if (comp.DefenseBonus < comp.MaxDefenseBonus)
+            {
+                comp.DefenseBonus += strain.Defense;
+            }
 
             // Update stamina bonus
             if (TryComp<StaminaComponent>(uid, out var stamina))

@@ -10,11 +10,13 @@ namespace Content.Shared._taBooRet
     [DataDefinition]
     public sealed partial class TrainingStrain
     {
-        [DataField("power")]
+        [DataField("damage")]
         public DamageSpecifier Damage { get; set; } = new();
 
+        [DataField("defense")]
         public FixedPoint2 Defense { get; set; } = new FixedPoint2();
 
+        [DataField("stamina")]
         public float Stamina { get; set; }
     }
 
@@ -75,7 +77,6 @@ namespace Content.Shared._taBooRet
         public float TimeForRest = 180f;
 
         [ViewVariables] public TimeSpan EndRestTime;
-        [ViewVariables] public bool IsResting;
         [ViewVariables] public TimeSpan NextStrainTime;
         #endregion
 
