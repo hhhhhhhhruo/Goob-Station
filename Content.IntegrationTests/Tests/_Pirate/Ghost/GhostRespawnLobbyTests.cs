@@ -225,7 +225,9 @@ public sealed class GhostRespawnLobbyTests
         var respawnSystem = pair.Server.System<PirateGhostRespawnSystem>();
         var ticker = pair.Server.System<GameTicker>();
         var mindSystem = pair.Server.System<MindSystem>();
+        var mapSystem = pair.Server.System<SharedMapSystem>();
         var entMan = pair.Server.EntMan;
+        MapId mapId = default;
 
         await pair.Server.WaitAssertion(() =>
         {
@@ -236,9 +238,10 @@ public sealed class GhostRespawnLobbyTests
         await pair.Server.WaitPost(() =>
         {
             pair.Server.CfgMan.SetCVar(CCVars.GhostRespawnDelay, TimeSpan.FromSeconds(5));
+            mapSystem.CreateMap(out mapId);
 
             var session = pair.Server.PlayerMan.Sessions.Single();
-            var body = entMan.SpawnEntity("MobHuman", MapCoordinates.Nullspace);
+            var body = entMan.SpawnEntity("MobHuman", new MapCoordinates(0, 0, mapId));
             var (mindId, _) = mindSystem.CreateMind(session.UserId, session.Name);
             mindSystem.SetUserId(mindId, session.UserId);
             ticker.PlayerJoinGame(session);
