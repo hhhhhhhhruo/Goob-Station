@@ -30,6 +30,7 @@ public sealed class PirateGhostRespawnSystem : EntitySystem
 
     private readonly Dictionary<NetUserId, GhostRespawnState> _states = new();
     private readonly Dictionary<NetUserId, PendingGhostTransition> _pendingTransitions = new();
+    private readonly HashSet<NetUserId> _respawnInFlight = new();
 
     public override void Initialize()
     {
@@ -51,12 +52,14 @@ public sealed class PirateGhostRespawnSystem : EntitySystem
     private void OnPlayerJoinedLobby(PlayerJoinedLobbyEvent ev)
     {
         ClearState(ev.PlayerSession.UserId);
+        _respawnInFlight.Remove(ev.PlayerSession.UserId);
     }
 
     private void OnRoundRestartCleanup(RoundRestartCleanupEvent ev)
     {
         _states.Clear();
         _pendingTransitions.Clear();
+        _respawnInFlight.Clear();
     }
 
     private void OnMindRemoved(Entity<MindContainerComponent> ent, ref MindRemovedMessage args)
@@ -107,6 +110,8 @@ public sealed class PirateGhostRespawnSystem : EntitySystem
 
     private void OnPlayerAttached(PlayerAttachedEvent args)
     {
+        _respawnInFlight.Remove(args.Player.UserId);
+
         if (!HasComp<GhostComponent>(args.Entity))
             return;
 
@@ -137,6 +142,11 @@ public sealed class PirateGhostRespawnSystem : EntitySystem
         if (!status.CanRespawn)
         {
             SendStatus(session);
+            return;
+        }
+
+        if (!_respawnInFlight.Add(session.UserId))
+        {
             return;
         }
 
