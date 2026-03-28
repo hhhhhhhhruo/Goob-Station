@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Content.Server.GameTicking;
 using Content.Server.Ghost.Roles.Components;
+using Content.Server.Mind;
 using Content.Shared._Pirate.Ghost;
 using Content.Shared.Bed.Cryostorage;
 using Content.Shared.CCVar;
@@ -23,6 +24,7 @@ public sealed class PirateGhostRespawnSystem : EntitySystem
 {
     [Dependency] private readonly IConfigurationManager _cfg = default!;
     [Dependency] private readonly GameTicker _gameTicker = default!;
+    [Dependency] private readonly MindSystem _mind = default!;
     [Dependency] private readonly IGameTiming _timing = default!;
     [Dependency] private readonly IPlayerManager _player = default!;
 
@@ -64,12 +66,24 @@ public sealed class PirateGhostRespawnSystem : EntitySystem
 
         var wasInCryo = HasComp<CryostorageContainedComponent>(ent.Owner);
 
-        if (!TryGetState(userId, out var state) || !state.HasCrewCycle || state.TimerArmed)
+        if (!TryGetState(userId, out var state) || !state.HasCrewCycle)
+            return;
+
+        if (wasInCryo)
+        {
+            _pendingTransitions[userId] = new PendingGhostTransition
+            {
+                Immediate = true
+            };
+            return;
+        }
+
+        if (state.TimerArmed)
             return;
 
         _pendingTransitions[userId] = new PendingGhostTransition
         {
-            Immediate = wasInCryo
+            Immediate = false
         };
     }
 
@@ -91,11 +105,13 @@ public sealed class PirateGhostRespawnSystem : EntitySystem
 
     private void OnPlayerAttached(PlayerAttachedEvent args)
     {
-        if (HasComp<GhostComponent>(args.Entity))
-        {
+        if (!HasComp<GhostComponent>(args.Entity))
+            return;
+
+        if (!IsTemporaryGhostProjection(args.Player.UserId, args.Entity))
             ArmTimerIfNeeded(args.Player.UserId);
-            SendStatus(args.Player);
-        }
+
+        SendStatus(args.Player);
     }
 
     private void OnGhostRespawnLobbyRequest(GhostRespawnLobbyRequest ev, EntitySessionEventArgs args)
@@ -108,7 +124,7 @@ public sealed class PirateGhostRespawnSystem : EntitySystem
             return;
         }
 
-        if (!_gameTicker.LobbyEnabled)
+        if (!HasRespawnStatus(session, attached))
         {
             SendStatus(session);
             return;
@@ -210,18 +226,20 @@ public sealed class PirateGhostRespawnSystem : EntitySystem
             return;
         }
 
-        if (state.TimerArmed)
+        if (_pendingTransitions.Remove(userId, out var pending) && pending.Immediate)
         {
-            _pendingTransitions.Remove(userId);
+            state.TimerArmed = true;
+            state.RespawnAvailableAt = _timing.CurTime;
             return;
         }
 
-        var availableAt = _timing.CurTime + GetRespawnDelay();
-        if (_pendingTransitions.Remove(userId, out var pending) && pending is { Immediate: true })
-            availableAt = _timing.CurTime;
+        if (state.TimerArmed)
+        {
+            return;
+        }
 
         state.TimerArmed = true;
-        state.RespawnAvailableAt = availableAt;
+        state.RespawnAvailableAt = _timing.CurTime + GetRespawnDelay();
     }
 
     private GhostRespawnStatus GetStatus(NetUserId userId)
@@ -255,7 +273,7 @@ public sealed class PirateGhostRespawnSystem : EntitySystem
 
     private void SendStatus(ICommonSession session)
     {
-        if (!_gameTicker.LobbyEnabled)
+        if (!HasRespawnStatus(session))
         {
             RaiseNetworkEvent(new GhostRespawnStatusEvent(false, false, TimeSpan.Zero), session.Channel);
             return;
@@ -263,6 +281,29 @@ public sealed class PirateGhostRespawnSystem : EntitySystem
 
         var status = GetStatus(session.UserId);
         RaiseNetworkEvent(new GhostRespawnStatusEvent(true, status.CanRespawn, status.RemainingTime), session.Channel);
+    }
+
+    private bool HasRespawnStatus(ICommonSession session, EntityUid? attached = null)
+    {
+        if (!_gameTicker.LobbyEnabled)
+            return false;
+
+        var entity = attached ?? session.AttachedEntity;
+        if (entity is not { Valid: true } attachedEntity)
+            return true;
+
+        return !IsTemporaryGhostProjection(session.UserId, attachedEntity);
+    }
+
+    private bool IsTemporaryGhostProjection(NetUserId userId, EntityUid attached)
+    {
+        if (!HasComp<VisitingMindComponent>(attached))
+            return false;
+
+        if (!_mind.TryGetMind(userId, out _, out var mind))
+            return true;
+
+        return !_mind.IsCharacterDeadPhysically(mind);
     }
 
     private void ClearState(NetUserId userId)
