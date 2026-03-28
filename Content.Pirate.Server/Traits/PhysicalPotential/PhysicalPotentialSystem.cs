@@ -4,6 +4,7 @@ using Content.Shared._Pirate.Stunnable;
 using Content.Shared.Damage;
 using Content.Shared.Damage.Components;
 using Content.Shared.Cloning.Events;
+using Content.Shared.Movement.Components;
 using Content.Shared.Mobs;
 using Content.Shared.Mobs.Components;
 using Content.Shared.Nutrition.Components;
@@ -12,6 +13,7 @@ using Content.Shared.Weapons.Melee;
 using Content.Shared.Weapons.Melee.Events;
 using Content.Pirate.Shared.Traits.PhysicalPotential;
 using Robust.Shared.Random;
+using Robust.Shared.Physics.Components;
 using Robust.Shared.Timing;
 
 namespace Content.Pirate.Server.Traits.PhysicalPotential
@@ -147,8 +149,9 @@ namespace Content.Pirate.Server.Traits.PhysicalPotential
         private void OnDamageModify(EntityUid uid, PhysicalPotentialComponent comp, DamageModifyEvent args)
         {
             var trainsDefense = ApplyDefenseReduction(args.Damage, comp.DefenseBonus);
+            var isAlive = TryComp<MobStateComponent>(uid, out var mob) && mob.CurrentState == MobState.Alive;
 
-            if (args.Origin != null && trainsDefense)
+            if (args.Origin != null && trainsDefense && isAlive)
             {
                 var newStrain = new TrainingStrain { Defense = comp.DefenseRisingSpeed };
                 AddStrain(comp, newStrain);
@@ -222,20 +225,26 @@ namespace Content.Pirate.Server.Traits.PhysicalPotential
         // -- STAMINA AND SPRINT --
         private void UpdateSprintProgress(float frameTime, EntityUid uid, PhysicalPotentialComponent comp)
         {
-            if (!TryComp<SprinterComponent>(uid, out var sprinter)) return;
-
-            if (sprinter.IsSprinting)
+            if (!TryComp<SprinterComponent>(uid, out var sprinter)
+                || !sprinter.IsSprinting
+                || !TryComp<InputMoverComponent>(uid, out var mover)
+                || !mover.HasDirectionalMovement
+                || !TryComp<PhysicsComponent>(uid, out var physics)
+                || physics.LinearVelocity.LengthSquared() <= 0.01f)
             {
-                comp.SprintTimer += frameTime;
+                comp.SprintTimer = 0;
+                return;
+            }
 
-                // Check if the sprint duration has exceeded the defined interval for a "tick"
-                if (comp.SprintTimer > comp.SprintInterval)
-                {
-                    comp.SprintTimer = 0;
+            comp.SprintTimer += frameTime;
 
-                    var newStrain = new TrainingStrain { Stamina = comp.StaminaRisingSpeed };
-                    AddStrain(comp, newStrain);
-                }
+            // Check if the sprint duration has exceeded the defined interval for a "tick"
+            if (comp.SprintTimer > comp.SprintInterval)
+            {
+                comp.SprintTimer = 0;
+
+                var newStrain = new TrainingStrain { Stamina = comp.StaminaRisingSpeed };
+                AddStrain(comp, newStrain);
             }
         }
 
