@@ -97,18 +97,42 @@ namespace Content.Pirate.Server.Traits.PhysicalPotential
 
             var clone = EnsureComp<PhysicalPotentialComponent>(args.CloneUid);
             clone.trainingEffectiveness = ent.Comp.trainingEffectiveness;
+            clone.Strains = new List<TrainingStrain>(ent.Comp.Strains.Count);
+            foreach (var strain in ent.Comp.Strains)
+            {
+                clone.Strains.Add(new TrainingStrain
+                {
+                    Damage = new DamageSpecifier(strain.Damage),
+                    Defense = strain.Defense,
+                    Stamina = strain.Stamina
+                });
+            }
+
+            clone.DamageBonus = new DamageSpecifier(ent.Comp.DamageBonus);
             clone.MaxDamageBonus = ent.Comp.MaxDamageBonus;
             clone.DamageRisingSpeed = ent.Comp.DamageRisingSpeed;
             clone.DefenseRisingSpeed = ent.Comp.DefenseRisingSpeed;
+            clone.DefenseBonus = ent.Comp.DefenseBonus;
             clone.MaxDefenseBonus = ent.Comp.MaxDefenseBonus;
             clone.StaminaRisingSpeed = ent.Comp.StaminaRisingSpeed;
             clone.MaxStamina = ent.Comp.MaxStamina;
+            clone.StaminaBonus = ent.Comp.StaminaBonus;
+            clone.SprintTimer = ent.Comp.SprintTimer;
             clone.SprintInterval = ent.Comp.SprintInterval;
             clone.PushUpsEfficiency = ent.Comp.PushUpsEfficiency;
             clone.TimeForRest = ent.Comp.TimeForRest;
+            clone.EndRestTime = ent.Comp.EndRestTime;
+            clone.IsResting = ent.Comp.IsResting;
+            clone.NextStrainTime = ent.Comp.NextStrainTime;
             clone.MaxStrainsNumber = ent.Comp.MaxStrainsNumber;
             clone.StrainsApplyingDelay = ent.Comp.StrainsApplyingDelay;
             clone.HungerCost = ent.Comp.HungerCost;
+
+            if (TryComp<StaminaComponent>(args.CloneUid, out var stamina))
+            {
+                stamina.CritThreshold += clone.StaminaBonus;
+                Dirty(args.CloneUid, stamina);
+            }
 
             Dirty(args.CloneUid, clone);
         }
@@ -118,22 +142,29 @@ namespace Content.Pirate.Server.Traits.PhysicalPotential
         {
             if (args.Origin == null) return;
 
-            var newStrain = new TrainingStrain { Defense = comp.DefenseRisingSpeed };
-            AddStrain(comp, newStrain);
+            var trainsDefense = false;
 
             //Reduces incoming damage
-            if (args.Damage.DamageDict.ContainsKey("Blunt"))
+            if (args.Damage.DamageDict.TryGetValue("Blunt", out var blunt))
             {
+                trainsDefense |= blunt > FixedPoint2.Zero;
                 args.Damage.DamageDict["Blunt"] = FixedPoint2.Max(
-                    args.Damage.DamageDict["Blunt"] - comp.DefenseBonus,
+                    blunt - comp.DefenseBonus,
                     FixedPoint2.Zero);
             }
 
-            if (args.Damage.DamageDict.ContainsKey("Slash"))
+            if (args.Damage.DamageDict.TryGetValue("Slash", out var slash))
             {
+                trainsDefense |= slash > FixedPoint2.Zero;
                 args.Damage.DamageDict["Slash"] = FixedPoint2.Max(
-                    args.Damage.DamageDict["Slash"] - comp.DefenseBonus,
+                    slash - comp.DefenseBonus,
                     FixedPoint2.Zero);
+            }
+
+            if (trainsDefense)
+            {
+                var newStrain = new TrainingStrain { Defense = comp.DefenseRisingSpeed };
+                AddStrain(comp, newStrain);
             }
         }
 
@@ -246,8 +277,13 @@ namespace Content.Pirate.Server.Traits.PhysicalPotential
             // Update stamina bonus
             if (TryComp<StaminaComponent>(uid, out var stamina))
             {
-                if (stamina.CritThreshold < comp.MaxStamina)
-                stamina.CritThreshold += strain.Stamina;
+                var staminaIncrease = MathF.Min(strain.Stamina, comp.MaxStamina - stamina.CritThreshold);
+                if (staminaIncrease > 0f)
+                {
+                    stamina.CritThreshold += staminaIncrease;
+                    comp.StaminaBonus += staminaIncrease;
+                    Dirty(uid, stamina);
+                }
             }
 
             comp.Strains.RemoveAt(comp.Strains.Count -1);

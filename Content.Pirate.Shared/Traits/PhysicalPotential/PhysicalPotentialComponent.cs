@@ -63,6 +63,9 @@ namespace Content.Pirate.Shared.Traits.PhysicalPotential
         [DataField("maxStamina")]
         public float MaxStamina = 200;
 
+        [DataField("staminaBonus")]
+        public float StaminaBonus;
+
         [DataField("sprintInterval"), ViewVariables(VVAccess.ReadWrite)]
         public float SprintInterval = 1;
         #endregion
