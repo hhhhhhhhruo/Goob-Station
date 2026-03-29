@@ -25,9 +25,12 @@
   name: trait-unrevivable-name
   description: trait-unrevivable-desc
   category: Meta
-  speciesBlacklist:
-    - IPC
-    - Plasmaman
+  conditions:
+    - !type:IsSpeciesCondition
+      invert: true
+      species:
+        - IPC
+        - Plasmaman
   components:
     - type: Unrevivable
       cloneable: true
