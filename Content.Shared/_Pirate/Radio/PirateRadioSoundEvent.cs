@@ -13,6 +13,10 @@ public readonly record struct PirateRadioSentEvent(
     EntityUid RadioSource,
     int Frequency);
 
+/// <summary>
+/// Raised on the receiving radio entity for each eligible receiver during radio message dispatch.
+/// Used for client-targeted receive feedback sounds without coupling that logic into the core radio systems.
+/// </summary>
 [ByRefEvent]
 public readonly record struct PirateRadioReceivedEvent(
     EntityUid MessageSource,
