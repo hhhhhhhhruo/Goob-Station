@@ -5,6 +5,6 @@ jukebox-menu-buttonpause = Пауза
 jukebox-menu-buttonstop = Стоп
 
 # Pirate: Shuffle & Repeat
-jukebox-menu-buttonshuffle = Shuffle
-jukebox-menu-buttonrepeat = Repeat
+jukebox-menu-buttonshuffle = Перемішати
+jukebox-menu-buttonrepeat = Повторити
 # End Pirate: Shuffle & Repeat
