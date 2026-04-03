@@ -25,6 +25,8 @@
     voiceCommands:
     - "казан, вари"
     - "казан вари"
+  - type: ActiveListener
+    range: 4
   - type: ReactionMixer
     reactionTypes:
     - WitchBrew
@@ -91,6 +93,8 @@
     - "апарат, дистилюй"
     - "апарат дистилюй"
     - "апарат, вари"
+  - type: ActiveListener
+    range: 4
   - type: ReactionMixer
     reactionTypes:
     - AlchemistDistill

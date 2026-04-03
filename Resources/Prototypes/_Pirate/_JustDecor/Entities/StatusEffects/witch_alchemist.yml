@@ -1,7 +1,6 @@
 - type: entity
   parent: MobStatusEffectDebuff
   id: StatusEffectWitchLove
-  name: status-effect-witch-love-name
   components:
   - type: SeeingRainbowsStatusEffect
   - type: MovementModStatusEffect
@@ -11,7 +10,6 @@
 - type: entity
   parent: MobStatusEffectDebuff
   id: StatusEffectWitchParanoia
-  name: status-effect-witch-paranoia-name
   components:
   - type: SeeingRainbowsStatusEffect
   - type: MovementModStatusEffect
@@ -29,7 +27,6 @@
 - type: entity
   parent: MobStatusEffectDebuff
   id: StatusEffectWitchRage
-  name: status-effect-witch-rage-name
   components:
   - type: GrantComponentsStatusEffect
     components:
@@ -39,7 +36,6 @@
 - type: entity
   parent: MobStatusEffectDebuff
   id: StatusEffectWitchInvisibility
-  name: status-effect-witch-invisibility-name
   components:
   - type: GrantComponentsStatusEffect
     components:
@@ -49,7 +45,6 @@
 - type: entity
   parent: MobStatusEffectDebuff
   id: StatusEffectWitchMindFog
-  name: status-effect-witch-mind-fog-name
   components:
   - type: MovementModStatusEffect
     walkSpeedModifier: 0.9
@@ -65,7 +60,6 @@
 - type: entity
   parent: MobStatusEffectDebuff
   id: StatusEffectWitchMirrorCurse
-  name: status-effect-witch-mirror-curse-name
   components:
   - type: GrantComponentsStatusEffect
     components:
@@ -75,7 +69,6 @@
 - type: entity
   parent: MobStatusEffectDebuff
   id: StatusEffectWitchSoulShadow
-  name: status-effect-witch-soul-shadow-name
   components:
   - type: GrantComponentsStatusEffect
     components:
@@ -95,7 +88,6 @@
 - type: entity
   parent: MobStatusEffectDebuff
   id: StatusEffectWitchBloodBond
-  name: status-effect-witch-blood-bond-name
   components:
   - type: GrantComponentsStatusEffect
     components:
@@ -105,7 +97,6 @@
 - type: entity
   parent: MobStatusEffectDebuff
   id: StatusEffectWitchSubstitution
-  name: status-effect-witch-substitution-name
   components:
   - type: WitchSubstitutionStatusEffect
     range: 6
@@ -115,7 +106,6 @@
 - type: entity
   parent: MobStatusEffectDebuff
   id: StatusEffectWitchBlackBile
-  name: status-effect-witch-black-bile-name
   components:
   - type: SeeingRainbowsStatusEffect
   - type: GrantComponentsStatusEffect
@@ -130,7 +120,6 @@
 - type: entity
   parent: MobStatusEffectDebuff
   id: StatusEffectWitchEcho
-  name: status-effect-witch-echo-name
   components:
   - type: GrantComponentsStatusEffect
     components:
@@ -141,7 +130,6 @@
 - type: entity
   parent: MobStatusEffectDebuff
   id: StatusEffectWitchNameCurse
-  name: status-effect-witch-name-curse-name
   components:
   - type: WitchNameCurseStatusEffect
     range: 7
@@ -149,7 +137,6 @@
 - type: entity
   parent: MobStatusEffectDebuff
   id: StatusEffectWitchHungerPotion
-  name: status-effect-witch-hunger-potion-name
   components:
   - type: GrantComponentsStatusEffect
     components:
@@ -174,7 +161,6 @@
 - type: entity
   parent: MobStatusEffectDebuff
   id: StatusEffectAlchemistBubbleGas
-  name: status-effect-alchemist-bubble-gas-name
   components:
   - type: GrantComponentsStatusEffect
     components:
@@ -186,7 +172,6 @@
 - type: entity
   parent: MobStatusEffectDebuff
   id: StatusEffectAlchemistGravityPotion
-  name: status-effect-alchemist-gravity-potion-name
   components:
   - type: GrantComponentsStatusEffect
     components:
@@ -198,7 +183,6 @@
 - type: entity
   parent: MobStatusEffectDebuff
   id: StatusEffectAlchemistCatalyst
-  name: status-effect-alchemist-catalyst-name
   components:
   - type: GrantComponentsStatusEffect
     components:
@@ -207,7 +191,6 @@
 - type: entity
   parent: MobStatusEffectDebuff
   id: StatusEffectAlchemistSoulCopperas
-  name: status-effect-alchemist-soul-copperas-name
   components:
   - type: GrantComponentsStatusEffect
     components:
@@ -219,7 +202,6 @@
 - type: entity
   parent: MobStatusEffectDebuff
   id: StatusEffectAlchemistClownTrail
-  name: status-effect-alchemist-clown-trail-name
   components:
   - type: GrantComponentsStatusEffect
     components:
@@ -231,7 +213,6 @@
 - type: entity
   parent: MobStatusEffectDebuff
   id: StatusEffectAlchemistMimicJuice
-  name: status-effect-alchemist-mimic-juice-name
   components:
   - type: GrantComponentsStatusEffect
     components:
@@ -241,7 +222,6 @@
 - type: entity
   parent: StatusEffectSlowdown
   id: StatusEffectAlchemistNitricSlowdown
-  name: status-effect-alchemist-nitric-slowdown-name
   components:
   - type: MovementModStatusEffect
     walkSpeedModifier: 0.8
@@ -250,7 +230,6 @@
 - type: entity
   parent: MobStatusEffectDebuff
   id: StatusEffectAlchemistNitricEssence
-  name: status-effect-alchemist-nitric-essence-name
   components:
   - type: GrantComponentsStatusEffect
     components:
@@ -265,7 +244,6 @@
 - type: entity
   parent: MobStatusEffectDebuff
   id: StatusEffectAlchemistMagnusElixir
-  name: status-effect-alchemist-magnus-elixir-name
   components:
   - type: MovementModStatusEffect
     walkSpeedModifier: 1.45
@@ -282,7 +260,6 @@
 - type: entity
   parent: MobStatusEffectDebuff
   id: StatusEffectAntiMagicWard
-  name: status-effect-anti-magic-ward-name
   components:
   - type: GrantComponentsStatusEffect
     components:
