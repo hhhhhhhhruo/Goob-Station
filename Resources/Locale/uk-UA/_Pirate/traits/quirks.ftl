@@ -12,9 +12,9 @@ trait-night-vision-name = Адаптовані очі
 trait-night-vision-desc = З якихось причин ваші очі краще адаптовані до темряви.
 
 trait-high-pain-tolerance-name = Висока толерантність до болю
-trait-high-pain-tolerance-desc = Ви впадаете в критичний стан при 110 пошкодженнях.
+trait-high-pain-tolerance-desc = Ви впадаєте в критичний стан при 110 пошкодженнях.
 trait-low-pain-tolerance-name = Низька толерантність до болю
-trait-low-pain-tolerance-desc = Ви впадаете в критичний стан при 90 пошкодженнях.
+trait-low-pain-tolerance-desc = Ви впадаєте в критичний стан при 90 пошкодженнях.
 
 trait-pirate-lightweight-name = Легковаговик
 trait-pirate-lightweight-desc = Ви важете меньше, ніж інші представники вашого виду. Вас легше підняти, кидати та тягнути.
