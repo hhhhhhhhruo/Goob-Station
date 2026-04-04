@@ -8,6 +8,7 @@ using Content.Goobstation.Shared.GrabIntent;
 using Content.Goobstation.Shared.MartialArts.Components;
 using Content.Pirate.Shared._JustDecor.MartialArts.Events;
 using Content.Pirate.Shared._JustDecor.MartialArts.Components;
+using Content.Shared.ActionBlocker;
 using Content.Shared._Shitmed.Medical.Surgery.Traumas.Systems;
 using Content.Shared._Shitmed.Medical.Surgery.Traumas.Components;
 using Content.Shared._Shitmed.Targeting;
@@ -59,6 +60,7 @@ namespace Content.Pirate.Shared._JustDecor.MartialArts;
 public sealed class SharedLegendaryCQCSystem : EntitySystem
 {
     [Dependency] private readonly SharedPopupSystem _popup = default!;
+    [Dependency] private readonly ActionBlockerSystem _blocker = default!;
     [Dependency] private readonly IGameTiming _timing = default!;
     [Dependency] private readonly IPrototypeManager _proto = default!;
     [Dependency] private readonly DamageableSystem _damageable = default!;
@@ -83,8 +85,6 @@ public sealed class SharedLegendaryCQCSystem : EntitySystem
     [Dependency] private readonly ThrowingSystem _throwing = default!;
     [Dependency] private readonly SharedChatSystem _chat = default!;
     [Dependency] private readonly SleepingSystem _sleeping = default!;
-
-    private readonly Dictionary<EntityUid, Dictionary<string, TimeSpan>> _cooldowns = new();
 
     public override void Initialize()
     {
@@ -468,6 +468,7 @@ public sealed class SharedLegendaryCQCSystem : EntitySystem
 
         var rushBuff = EnsureComp<LegendaryCQCRushBuffComponent>(ent);
         rushBuff.EndTime = _timing.CurTime + TimeSpan.FromSeconds(3);
+        _movementSpeed.RefreshMovementSpeedModifiers(ent);
 
         _audio.PlayPvs(new SoundPathSpecifier("/Audio/Weapons/genhit1.ogg"), target);
         ComboPopup(ent, target, "legendary-cqc-rush-name");
@@ -600,6 +601,7 @@ public sealed class SharedLegendaryCQCSystem : EntitySystem
         }
 
         legendaryKnowledge.CombatMode = CompOrNull<CombatModeComponent>(user)?.IsInCombatMode ?? false;
+        legendaryKnowledge.LastMoveTime = _timing.CurTime;
         Dirty(user, legendaryKnowledge);
         Dirty(user, canPerformCombo);
         _movementSpeed.RefreshMovementSpeedModifiers(user);
@@ -626,17 +628,25 @@ public sealed class SharedLegendaryCQCSystem : EntitySystem
         if (_timing.CurTime < comp.EndTime)
         {
             args.Damage *= comp.DamageReduction;
+
+            if (_netManager.IsServer &&
+                comp.ReflectDamage > 0f &&
+                args.Origin is { } attacker &&
+                attacker != uid)
+            {
+                _damageable.TryChangeDamage(attacker, args.OriginalDamage * comp.ReflectDamage, origin: uid);
+
+                if (comp.CounterSound != null)
+                    _audio.PlayPvs(comp.CounterSound, uid);
+            }
         }
     }
 
     private void OnKnowledgeStartup(EntityUid uid, LegendaryCQCKnowledgeComponent comp, ComponentStartup args)
     {
-        if (TryComp<LegendaryCQCCooldownsComponent>(uid, out var cooldowns))
-            _cooldowns[uid] = new Dictionary<string, TimeSpan>(cooldowns.CooldownTimers);
-        else
-            _cooldowns[uid] = new Dictionary<string, TimeSpan>();
-
+        EnsureComp<LegendaryCQCCooldownsComponent>(uid);
         comp.CombatMode = CompOrNull<CombatModeComponent>(uid)?.IsInCombatMode ?? false;
+        comp.LastMoveTime = _timing.CurTime;
         Dirty(uid, comp);
         _movementSpeed.RefreshMovementSpeedModifiers(uid);
     }
@@ -651,7 +661,7 @@ public sealed class SharedLegendaryCQCSystem : EntitySystem
         }
 
         comp.OriginalAttackRate = null;
-        _cooldowns.Remove(uid);
+        RemCompDeferred<LegendaryCQCCooldownsComponent>(uid);
 
         if (!TerminatingOrDeleted(uid))
             _movementSpeed.RefreshMovementSpeedModifiers(uid);
@@ -695,8 +705,8 @@ public sealed class SharedLegendaryCQCSystem : EntitySystem
 
     private void UpdateCombatModes(float frameTime)
     {
-        var query = EntityQueryEnumerator<LegendaryCQCKnowledgeComponent, CombatModeComponent>();
-        while (query.MoveNext(out var uid, out var knowledge, out var combat))
+        var query = EntityQueryEnumerator<LegendaryCQCKnowledgeComponent>();
+        while (query.MoveNext(out var uid, out var knowledge))
         {
             UpdateCombatState(uid, frameTime);
 
@@ -707,11 +717,26 @@ public sealed class SharedLegendaryCQCSystem : EntitySystem
                 UpdateAttackSpeed(uid, knowledge);
             }
 
-            // Movement haste increase
-            if (TryComp<PhysicsComponent>(uid, out var physics) && physics.LinearVelocity.Length() > 0.1f)
+            if (!TryComp<PhysicsComponent>(uid, out var physics))
+                continue;
+
+            if (physics.LinearVelocity.LengthSquared() > knowledge.MinCounterVelocitySquared)
             {
-                AddHaste(uid, knowledge, 0.05f * frameTime);
+                knowledge.LastMoveTime = _timing.CurTime;
             }
+            else if (_netManager.IsServer &&
+                     !HasComp<LegendaryCQCCounterBuffComponent>(uid) &&
+                     !IsDown(uid) &&
+                     _blocker.CanInteract(uid, null) &&
+                     _timing.CurTime >= knowledge.LastMoveTime + knowledge.CounterStanceDelay)
+            {
+                var counterBuff = EnsureComp<LegendaryCQCCounterBuffComponent>(uid);
+                counterBuff.EndTime = _timing.CurTime + knowledge.CounterStanceDuration;
+                knowledge.LastMoveTime = _timing.CurTime;
+            }
+
+            if (physics.LinearVelocity.Length() > 0.1f)
+                AddHaste(uid, knowledge, 0.05f * frameTime);
         }
     }
 
@@ -741,10 +766,10 @@ public sealed class SharedLegendaryCQCSystem : EntitySystem
 
     private bool CheckCooldown(EntityUid uid, string ability)
     {
-        if (!_cooldowns.TryGetValue(uid, out var cooldownDict))
+        if (!TryComp<LegendaryCQCCooldownsComponent>(uid, out var cooldowns))
             return true;
 
-        if (!cooldownDict.TryGetValue(ability, out var cooldownEnd))
+        if (!cooldowns.CooldownTimers.TryGetValue(ability, out var cooldownEnd))
             return true;
 
         return _timing.CurTime >= cooldownEnd;
@@ -752,17 +777,9 @@ public sealed class SharedLegendaryCQCSystem : EntitySystem
 
     private void SetCooldown(EntityUid uid, string ability, TimeSpan duration)
     {
-        if (!_cooldowns.TryGetValue(uid, out var cooldownDict))
-        {
-            cooldownDict = new Dictionary<string, TimeSpan>();
-            _cooldowns[uid] = cooldownDict;
-        }
-
+        var cooldowns = EnsureComp<LegendaryCQCCooldownsComponent>(uid);
         var cooldownEnd = _timing.CurTime + duration;
-        cooldownDict[ability] = cooldownEnd;
-
-        if (TryComp<LegendaryCQCCooldownsComponent>(uid, out var cooldowns))
-            cooldowns.CooldownTimers[ability] = cooldownEnd;
+        cooldowns.CooldownTimers[ability] = cooldownEnd;
     }
 
     private void UpdateCombatState(EntityUid uid, float frameTime)

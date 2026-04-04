@@ -49,6 +49,18 @@ public sealed partial class LegendaryCQCKnowledgeComponent : Component
     [DataField]
     public TimeSpan CombatModeEndTime;
 
+    [DataField]
+    public TimeSpan LastMoveTime;
+
+    [DataField]
+    public float MinCounterVelocitySquared = 0.25f;
+
+    [DataField]
+    public TimeSpan CounterStanceDelay = TimeSpan.FromSeconds(1);
+
+    [DataField]
+    public TimeSpan CounterStanceDuration = TimeSpan.FromSeconds(5);
+
     [ViewVariables(VVAccess.ReadWrite), DataField, AutoNetworkedField]
     public int CurrentComboChain = 0;
 
