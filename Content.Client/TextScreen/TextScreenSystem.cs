@@ -57,6 +57,9 @@ public sealed class TextScreenSystem : VisualizerSystem<TextScreenVisualsCompone
             { ':', "colon" },
             { '!', "exclamation" },
             { '?', "question" },
+            { '\'', "apostrophe" }, // Pirate: screen text
+            { '\u2019', "apostrophe" }, // Pirate: screen text
+            { '\u02BC', "apostrophe" }, // Pirate: screen text
             { '*', "star" },
             { '+', "plus" },
             { '-', "dash" },
