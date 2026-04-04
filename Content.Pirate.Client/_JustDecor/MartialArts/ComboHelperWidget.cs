@@ -28,6 +28,7 @@ public sealed class ComboHelperWidget : UIWidget
             [MartialArtsForms.KungFuDragon] = "KungFuDragon",
             [MartialArtsForms.Ninjutsu] = "Ninjutsu",
             [MartialArtsForms.HellRip] = "HellRip",
+            [MartialArtsForms.LegendaryCloseQuartersCombat] = "LegendaryCloseQuartersCombat",
         };
 
     [Dependency] private readonly IPrototypeManager _proto = default!;
