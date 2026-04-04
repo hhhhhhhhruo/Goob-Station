@@ -29,6 +29,7 @@ public sealed class ComboHelperUIController : UIController, IOnStateEntered<Game
         EntityManager.EventBus.SubscribeLocalEvent<ComboHelperComponent, AfterAutoHandleStateEvent>(OnHandleState);
         EntityManager.EventBus.SubscribeLocalEvent<ComboHelperComponent, ComponentAdd>(OnComponentAdd);
         EntityManager.EventBus.SubscribeLocalEvent<ComboHelperComponent, ComponentRemove>(OnComponentRemove);
+        EntityManager.EventBus.SubscribeLocalEvent<MartialArtsKnowledgeComponent, AfterAutoHandleStateEvent>(OnMartialArtsState);
         EntityManager.EventBus.SubscribeLocalEvent<MartialArtsKnowledgeComponent, ComponentAdd>(OnMartialArtsAdded);
         EntityManager.EventBus.SubscribeLocalEvent<MartialArtsKnowledgeComponent, ComponentRemove>(OnMartialArtsRemoved);
 
@@ -64,6 +65,14 @@ public sealed class ComboHelperUIController : UIController, IOnStateEntered<Game
     }
 
     private void OnMartialArtsAdded(EntityUid uid, MartialArtsKnowledgeComponent component, ComponentAdd args)
+    {
+        if (uid != _player.LocalEntity)
+            return;
+
+        UpdateWidget();
+    }
+
+    private void OnMartialArtsState(EntityUid uid, MartialArtsKnowledgeComponent component, ref AfterAutoHandleStateEvent args)
     {
         if (uid != _player.LocalEntity)
             return;

@@ -49,7 +49,7 @@
   id: LegendaryCQCDisarm
   martialArtsForm: LegendaryCloseQuartersCombat
   attacks:
-  - Disarm
+  - Harm
   - Grab
   name: legendary-cqc-disarm-name
   paralyzeTime: 2

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Diagnostics.CodeAnalysis;
+using Content.Goobstation.Common.DoAfter;
 using Content.Goobstation.Common.Grab;
 using Content.Goobstation.Common.MartialArts;
 using Content.Goobstation.Shared.GrabIntent;
@@ -107,6 +108,7 @@ public sealed class SharedLegendaryCQCSystem : EntitySystem
         SubscribeLocalEvent<LegendaryCQCKnowledgeComponent, RefreshMovementSpeedModifiersEvent>(OnRefreshCombatMovespeed);
         SubscribeLocalEvent<LegendaryCQCCounterBuffComponent, DamageModifyEvent>(OnCounterDamageModify);
         SubscribeLocalEvent<LegendaryCQCKnowledgeComponent, ComponentStartup>(OnKnowledgeStartup);
+        SubscribeLocalEvent<CombatModeToggledEvent>(OnCombatModeToggled);
 
         SubscribeLocalEvent<LegendaryCQCKnowledgeComponent, MeleeHitEvent>(OnMeleeHit);
 
@@ -572,7 +574,8 @@ public sealed class SharedLegendaryCQCSystem : EntitySystem
         if (HasComp<LegendaryCQCKnowledgeComponent>(user))
             return;
 
-        EnsureComp<LegendaryCQCKnowledgeComponent>(user);
+        var legendaryKnowledge = EnsureComp<LegendaryCQCKnowledgeComponent>(user);
+        EnsureComp<LegendaryCQCCooldownsComponent>(user);
         var canPerformCombo = EnsureComp<CanPerformComboComponent>(user);
         EnsureComp<MartialArtsKnowledgeComponent>(user);
         EnsureComp<PullerComponent>(user);
@@ -592,10 +595,14 @@ public sealed class SharedLegendaryCQCSystem : EntitySystem
             if (TryComp<MartialArtsKnowledgeComponent>(user, out var knowledge))
             {
                 knowledge.MartialArtsForm = MartialArtsForms.LegendaryCloseQuartersCombat;
+                Dirty(user, knowledge);
             }
         }
 
+        legendaryKnowledge.CombatMode = CompOrNull<CombatModeComponent>(user)?.IsInCombatMode ?? false;
+        Dirty(user, legendaryKnowledge);
         Dirty(user, canPerformCombo);
+        _movementSpeed.RefreshMovementSpeedModifiers(user);
     }
 
     private void OnRefreshMovespeed(EntityUid uid, LegendaryCQCRushBuffComponent comp, RefreshMovementSpeedModifiersEvent args)
@@ -608,7 +615,7 @@ public sealed class SharedLegendaryCQCSystem : EntitySystem
 
     private void OnRefreshCombatMovespeed(EntityUid uid, LegendaryCQCKnowledgeComponent comp, RefreshMovementSpeedModifiersEvent args)
     {
-        if (TryComp<CombatModeComponent>(uid, out var combat) && combat.IsInCombatMode)
+        if (comp.CombatMode)
         {
             args.ModifySpeed(1.15f, 1.15f);
         }
@@ -624,10 +631,14 @@ public sealed class SharedLegendaryCQCSystem : EntitySystem
 
     private void OnKnowledgeStartup(EntityUid uid, LegendaryCQCKnowledgeComponent comp, ComponentStartup args)
     {
-        if (!_cooldowns.ContainsKey(uid))
-        {
+        if (TryComp<LegendaryCQCCooldownsComponent>(uid, out var cooldowns))
+            _cooldowns[uid] = new Dictionary<string, TimeSpan>(cooldowns.CooldownTimers);
+        else
             _cooldowns[uid] = new Dictionary<string, TimeSpan>();
-        }
+
+        comp.CombatMode = CompOrNull<CombatModeComponent>(uid)?.IsInCombatMode ?? false;
+        Dirty(uid, comp);
+        _movementSpeed.RefreshMovementSpeedModifiers(uid);
     }
 
     private void OnKnowledgeShutdown(EntityUid uid, LegendaryCQCKnowledgeComponent comp, ComponentShutdown args)
@@ -641,6 +652,22 @@ public sealed class SharedLegendaryCQCSystem : EntitySystem
 
         comp.OriginalAttackRate = null;
         _cooldowns.Remove(uid);
+
+        if (!TerminatingOrDeleted(uid))
+            _movementSpeed.RefreshMovementSpeedModifiers(uid);
+    }
+
+    private void OnCombatModeToggled(ref CombatModeToggledEvent ev)
+    {
+        if (!TryComp<LegendaryCQCKnowledgeComponent>(ev.User, out var knowledge))
+            return;
+
+        if (knowledge.CombatMode == ev.Activated)
+            return;
+
+        knowledge.CombatMode = ev.Activated;
+        Dirty(ev.User, knowledge);
+        _movementSpeed.RefreshMovementSpeedModifiers(ev.User);
     }
 
 
@@ -731,7 +758,11 @@ public sealed class SharedLegendaryCQCSystem : EntitySystem
             _cooldowns[uid] = cooldownDict;
         }
 
-        cooldownDict[ability] = _timing.CurTime + duration;
+        var cooldownEnd = _timing.CurTime + duration;
+        cooldownDict[ability] = cooldownEnd;
+
+        if (TryComp<LegendaryCQCCooldownsComponent>(uid, out var cooldowns))
+            cooldowns.CooldownTimers[ability] = cooldownEnd;
     }
 
     private void UpdateCombatState(EntityUid uid, float frameTime)
