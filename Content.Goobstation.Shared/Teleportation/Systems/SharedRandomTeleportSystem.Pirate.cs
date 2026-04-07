@@ -67,11 +67,9 @@ public partial class SharedRandomTeleportSystem
         var targetCoords = new MapCoordinates();
         var foundValid = false;
         EntityUid? pullableEntity = null;
-        var stage = GrabStage.No;
 
         if (TryComp<PullerComponent>(uid, out var puller))
         {
-            stage = puller.GrabStage;
             pullableEntity = puller.Pulling;
         }
 
@@ -126,7 +124,7 @@ public partial class SharedRandomTeleportSystem
         if (pullableEntity != null && teleportPulledEntities)
         {
             _xform.SetWorldPosition(pullableEntity.Value, newPos);
-            _pullingSystem.TryStartPull(uid, pullableEntity.Value, grabStageOverride: stage, force: true);
+            _pullingSystem.TryStartPull(uid, pullableEntity.Value, force: true);
         }
 
         return newPos;
