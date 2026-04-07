@@ -43,7 +43,6 @@
     - GoblinMutter
     - GoblinThroatSinging
     - Hiss
-    - Belch
   - type: DamageOnHighSpeedImpact
     damage:
       types:
@@ -55,7 +54,7 @@
       - 1,1,1,4
       - 2,2,2,5
       - 3,3,3,6
-    storedRotation: -67.5 # Bug: must be half the angle.
+    storedOffset: 0,17
   - type: Vocal
     wilhelm: "/Audio/_Pirate/Voice/Goblin/goblin_cackle_5.ogg"
     sounds:
