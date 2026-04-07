@@ -13,7 +13,7 @@
             !type:NanotrasenNameGenerator
             prefixCreator: 'ED'
         - type: StationEmergencyShuttle
-          emergencyShuttlePath: /Maps/Shuttles/emergency_raven.yml
+          emergencyShuttlePath: /Maps/_Pirate/Shuttles/emergency_raven.yml
         - type: StationJobs
           availableJobs:
             #command
