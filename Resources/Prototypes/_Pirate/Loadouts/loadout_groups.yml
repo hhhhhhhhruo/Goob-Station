@@ -55,8 +55,8 @@
 - type: loadoutGroup
   id: CommandSelfDefense
   name: loadout-group-command-self-defense
-  maxLimit: 2
   minLimit: 0
+  maxLimit: 2
   loadouts:
   - CSDFlash
   - CSDWeaponDisabler
