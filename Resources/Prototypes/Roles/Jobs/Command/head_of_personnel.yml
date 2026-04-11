@@ -231,10 +231,6 @@
     ears: ClothingHeadsetAltCommand
     belt: BoxFolderClipboard
     eyes: ClothingEyesHudCommand
-  storage:
-    back:
-    - Flash
-    #- TelescopicBaton # Goobstation # PIRATE, moved to loadouts
 
 - type: chameleonOutfit
   id: HeadOfPersonnelChameleonOutfit

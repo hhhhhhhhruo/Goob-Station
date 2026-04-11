@@ -210,11 +210,6 @@
     #gloves: ClothingHandsGlovesCaptain - Goobstation, moved to loadouts
     id: CaptainPDA
     ears: ClothingHeadsetAltCommand
-  storage:
-    back:
-    - Flash
-    #- TelescopicBaton # Goobstation # PIRATE, moved to loadouts
-    # - StationCharter
 
 - type: chameleonOutfit
   id: CaptainChameleonOutfit
