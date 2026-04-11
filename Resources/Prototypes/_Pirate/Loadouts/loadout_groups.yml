@@ -344,10 +344,6 @@
   - EpiHudGlasses
   - EtherealGlasses
   - EpiHud
-  - Glasses
-  - GlassesJamjar
-  - GlassesJensen
-  - CheapSunglasses
 
 - type: loadoutGroup
   id: MantisBelt
@@ -456,7 +452,7 @@
   - LoadoutBackpackSatchelInterdyne
   - LoadoutBackpackDuffelInterdyne
   - LoadoutBackpackMessengerBaseInterdyne
-  
+
 #Clothing
 - type: loadoutGroup
   id: InterdyneClothing
@@ -488,15 +484,15 @@
 - type: loadoutGroup
   id: InterdyneOfficerStamp
   name: loadout-group-interdyne-stamp-officer
-  loadouts:  
+  loadouts:
   - LoadoutRubberStampOfficerInterdyne
-  
+
 - type: loadoutGroup
   id: InterdyneDeputyStamp
   name: loadout-group-interdyne-stamp-deputy
-  loadouts:  
+  loadouts:
   - LoadoutRubberStampDeputyInterdyne
-  
+
 #Belt
 - type: loadoutGroup
   id: InterdyneSurgery
@@ -504,12 +500,12 @@
   loadouts:
   - LoadoutClothingBeltCombatSurgeryInterdyne
 
-  
+
 #Інше
 - type: loadoutGroup
   id: InterdynePublicKey
   name: loadout-group-interdyne-key
-  loadouts:  
+  loadouts:
   - LoadoutEncryptionKeyInterdyne
 
 ## Other - Інше
